@@ -5,9 +5,9 @@
   <body>
     <?php
       session_start();
-      if(isset($_POST['user'], $_POST['password']))  // Verificar se o usuário está logado
+      if(isset($_POST['user'], $_POST['password']))  //Verificar se o usuário está logado
       {
-        if($_POST['user'] != "" && $_POST['password'] != "")
+        if($_POST['user'] != "" && $_POST['password'] != "")  //Verificar se não há campos vazios
         {
           $_SESSION['user'] = $_POST['user'];
           $_SESSION['user_aka'] = strstr($_POST['user'], "@", true);
