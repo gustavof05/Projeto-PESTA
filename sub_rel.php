@@ -95,16 +95,12 @@
         echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         echo "<div id='labsi' style='display: none;'><h3><b>Campos de submissão para Laboratório de Sistemas (LABSI):</b></h3>";
         //Verificar se existe uma edição aberta dentro do prazo
-        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1 AND INICIO <= '$datual' AND FIM >= '$datual'");
-        if($resultado !== false) 
-        {       
-          if ($resultado->fetchArray()) //Verifica se há pelo menos uma linha retornada
+        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1 AND (INICIO <= '$datual' AND FIM >= '$datual') /*OR (INICIO <= '2024-05-18 15:16:00' AND FIM >= '2024-06-18 15:16:00')*/");
+        if($resultado)
+        {
+          while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
           {
-            echo "Você pode submeter relatórios.<br>";           
-            $resultado->reset();  //Reinicia o ponteiro do resultado para o início           
-            while($row = $resultado->fetch_Array(SQLITE3_ASSOC)) //Processar cada linha do resultado
-            {
-              echo "<br> Época: ". $row["EPOCA"]. " - Prazo: " . $row["FIM"] . "<br>";
+            echo " Época: ". $row["EPOCA"]. " - Prazo: " . $row["FIM"] . "<br>";
           
     ?>
     <form action="" enctype="multipart/form-data" method="POST">
@@ -113,21 +109,25 @@
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-              if(isset($_POST["enviar"]))
+            if(isset($_POST["enviar"]))
+            {
+              $arq = $_FILES["file"];
+              $narq = explode(".", $arq["name"]);
+              if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+              else
               {
-                $arq = $_FILES["file"];
-                $narq = explode(".", $arq["name"]);
-                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-                else
-                {
-                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-                  echo "Upload realizado";
-                }
+                move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                echo "Upload realizado";
               }
             }
+            echo "<br>";
           }
-          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
-        }
+        } 
+        if (!$resultado) {
+          die("Erro na consulta: " . $conexao->lastErrorMsg());
+      }
+               
+        //else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
         echo "</div>";
         echo "<div id='pesta' style='display: none;'><h3><b>Campos de submissão para Projeto / Estágio (PESTA):</b></h3>";
         //Verificar se existe uma edição aberta dentro do prazo
