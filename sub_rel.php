@@ -30,52 +30,109 @@
         header('Location: login.php');  //Redirecionar para a página de login
         exit();
       }
-
+//------------------------------------SEPARADOR PROFESSOR------------------------------------\\
       if ($_SESSION['user'] == "admin") 
       {
-        echo "Bem-vindo, professor <b>" . strtoupper($_SESSION['user_aka']) . "</b>!"
+        echo "<b><h2>Bem-vindo, professor " . strtoupper($_SESSION['user_aka']) . "!"
     ?>
     <form action="login.php" style="display: inline; float: right;" method="POST">
       <input type="submit" name="logout" value="Logout"/>
     </form>
     <?php
-        echo "</br>";
+        echo "</b></h2>";
         //Selecionar UC
-        echo "<br>Listar Unidades Curriculares:
+        echo "<br><b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <option value='1' >Laborat&oacute;rio de Sistemas (LABSI)</option>
           <option value='2' >Projeto / Est&aacute;gio (PESTA)</option>
-        </select>";
-        echo "<br><div id='todos' style='display: none;'>
-          <!-- Campos de submissão para todas as Unidades Curriculares -->
-        </div>
-        <div id='labsi' style='display: none;'>
-          <!-- Campos de submissão para Laboratório de Sistemas (LABSI) -->
-        </div>
-        <div id='pesta' style='display: none;'>
-          <!-- Campos de submissão para Projeto / Estágio (PESTA) -->
-        </div>"
-        //Exibir botões para criar, editar/adicionar ou excluir relatórios da UC selecionada
+        </select></h3>";
+        echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
+        echo "<div id='labsi' style='display: none;'><h3><b>Campos de submissão para Laboratório de Sistemas (LABSI):</b></h3>";
+        //Verificar se existe uma edição aberta dentro do prazo
+        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1");
+        if($resultado)
+        {
+          if ($resultado->fetchArray() != false) 
+          {
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
+              $dfinal = strtotime($row["FIM"]); //Converte a data do formato string para timestamp
+              $hoje = strtotime($datual); //Converte a data atual para timestamp
+              $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
     ?>
     <form action="" enctype="multipart/form-data" method="POST">
 			<input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-        if(isset($_POST["enviar"]))
-        {
-          $arq = $_FILES["file"];
-          $narq = explode(".", $arq["name"]);
-          if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-          else
-          {
-            move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-            echo "Upload realizado";
+              if(isset($_POST["enviar"]))
+              {
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
+              }
+              echo "<br>";
+            }
           }
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
         }
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
+        echo "</div>";
+        echo "<div id='pesta' style='display: none;'><h3><b>Campos de submissão para Projeto / Estágio (PESTA):</b></h3>";
+        //Verificar se existe uma edição aberta dentro do prazo
+        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 2");
+        if($resultado)
+        {
+          if ($resultado->fetchArray() != false) 
+          {
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
+              $dfinal = strtotime($row["FIM"]); //Converte a data do formato string para timestamp
+              $hoje = strtotime($datual); //Converte a data atual para timestamp
+              $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
+    ?>
+    <form action="" enctype="multipart/form-data" method="POST">
+      <input type="file" name="file"/>
+      <input type="submit" name="enviar" value="Submeter"/>
+    </form>
+    <?php
+              if(isset($_POST["enviar"]))
+              {
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
+              }
+              echo "<br>";
+            }
+          }
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+        }
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
+        echo "</div>";
+        //Exibir botões para criar, editar/adicionar ou excluir relatórios da UC selecionada
       }
-//---------------------------------SEPARADOR PROFESSOR-ALUNO---------------------------------\\
+//--------------------------------------SEPARADOR ALUNO--------------------------------------\\
       else
       {
         echo "<b><h2>Bem-vindo, aluno nº" . $_SESSION['user_aka'] . "!"
@@ -95,65 +152,77 @@
         echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         echo "<div id='labsi' style='display: none;'><h3><b>Campos de submissão para Laboratório de Sistemas (LABSI):</b></h3>";
         //Verificar se existe uma edição aberta dentro do prazo
-        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1 AND (INICIO <= '$datual' AND FIM >= '$datual') /*OR (INICIO <= '2024-05-18 15:16:00' AND FIM >= '2024-06-18 15:16:00')*/");
+        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1 AND INICIO <= '$datual' AND FIM >= '$datual'");
         if($resultado)
         {
-          while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+          if ($resultado->fetchArray() != false) 
           {
-            echo " Época: ". $row["EPOCA"]. " - Prazo: " . $row["FIM"] . "<br>";
-          
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
     ?>
     <form action="" enctype="multipart/form-data" method="POST">
-      <!--input type="hidden" name="id_submissao" value="<!-?php echo $row['ID']; ?->"-->
 			<input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-            if(isset($_POST["enviar"]))
-            {
-              $arq = $_FILES["file"];
-              $narq = explode(".", $arq["name"]);
-              if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-              else
+              if(isset($_POST["enviar"]))
               {
-                move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-                echo "Upload realizado";
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
               }
+              echo "<br>";
             }
-            echo "<br>";
           }
-        } 
-        if (!$resultado) {
-          die("Erro na consulta: " . $conexao->lastErrorMsg());
-      }
-               
-        //else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+        }
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
         echo "</div>";
         echo "<div id='pesta' style='display: none;'><h3><b>Campos de submissão para Projeto / Estágio (PESTA):</b></h3>";
         //Verificar se existe uma edição aberta dentro do prazo
-        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 2 AND INICIO <= '$datual' AND FIM >= '$datual'");
-        if($resultado->num_rows > 0) 
+        $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 2 AND (INICIO <= '$datual' AND FIM >= '$datual') /*OR (INICIO <= '2024-05-18 15:16:00' AND FIM >= '2024-06-18 15:16:00')*/");
+        if($resultado)
         {
-          echo "Você pode submeter relatórios.";
+          if ($resultado->fetchArray() != false) 
+          {
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
     ?>
     <form action="" enctype="multipart/form-data" method="POST">
       <input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-          if(isset($_POST["enviar"]))
-          {
-            $arq = $_FILES["file"];
-            $narq = explode(".", $arq["name"]);
-            if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-            else
-            {
-              move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-              echo "Upload realizado";
+              if(isset($_POST["enviar"]))
+              {
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
+              }
+              echo "<br>";
             }
           }
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
         }
-        else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
         echo "</div>";
       }
     ?>
