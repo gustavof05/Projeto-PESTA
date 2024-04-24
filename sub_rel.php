@@ -39,9 +39,18 @@
       <input type="submit" name="logout" value="Logout"/>
     </form>
     <?php
-        echo "</b></h2>";
+        echo "</b></h2><br>";
+    ?>
+    <form action="criar_uc.php" method="POST">
+      <input type="submit" name="cuc" value="Criar edição UC"/>
+    </form>
+    <br>
+    <form action="criar_sub.php" style="display: inline;" method="POST">
+      <input type="submit" name="cs" value="Criar campo de submissão"/>
+    </form>
+    <?php
         //Selecionar UC
-        echo "<br><b><h3>Listar Unidades Curriculares:</b>
+        echo "<br><br><b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <option value='1' >Laborat&oacute;rio de Sistemas (LABSI)</option>
@@ -49,7 +58,7 @@
         </select></h3>";
         echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         echo "<div id='labsi' style='display: none;'><h3><b>Campos de submissão para Laboratório de Sistemas (LABSI):</b></h3>";
-        //Verificar se existe uma edição aberta dentro do prazo
+        //Verificar as edições criadas
         $resultado = $conexao->query("SELECT * FROM SUBMISSOES WHERE EDICAO_UC = 1");
         if($resultado)
         {
