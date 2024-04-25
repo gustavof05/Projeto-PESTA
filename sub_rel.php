@@ -42,11 +42,11 @@
         echo "</b></h2><br>";
     ?>
     <form action="criar_uc.php" method="POST">
-      <input type="submit" name="cuc" value="Criar edição UC"/>
+      <input type="submit" name="cuc" value="Criar/Excluir edição UC"/>
     </form>
     <br>
     <form action="criar_sub.php" style="display: inline;" method="POST">
-      <input type="submit" name="cs" value="Criar campo de submissão"/>
+      <input type="submit" name="cs" value="Criar/Excluir campo de submissão"/>
     </form>
     <?php
         //Selecionar UC
