@@ -2,258 +2,278 @@
   $conexao = new SQLite3('bd_pesta.db');
   if(!$conexao) die("Erro ao conectar a base de dados."); //Houve erros na conexão
   date_default_timezone_set("Europe/Lisbon");
-  session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
-  session_start();  //Inicio de sessão
-  if ($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") //Esta página só funciona para ADMIN'S e RUC'S
-  {
-//------------------------------------ENVIAR DADOS------------------------------------\\
-    if(isset($_POST['env'])) //Se o formulário for enviado
-    {
-      if(isset($_POST['id'], $_POST['epoca'], $_POST['inicio'], $_POST['fim'])) //Verificar se todos os campos foram preenchidos
-      {
-        //Recuperar dados do formulário
-        $id = $_POST['id'];
-        $epoca = $_POST['epoca'];
-        $inicio = $_POST['inicio'];
-        $fim = $_POST['fim'];
-        $di = $_POST['di'];
-        $df = $_POST['df'];
-        $inicio = $inicio . " " . $di;
-        $fim = $fim . " " . $df;
-        //Preparar a inserção da nova edição de UC
-        $stmt = $conexao->prepare("INSERT INTO AVALIACOES (EDICAO_UC, EPOCA, INICIO, FIM) VALUES (:id, :ep, :ini, :fm)");
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':ep', $epoca);
-        $stmt->bindParam(':ini', $inicio);
-        $stmt->bindParam(':fm', $fim);
-        $stmt->execute(); //Executar a submissão dos dados na BD
-        header('Location: ' . $_SERVER['PHP_SELF']); //Redireciona para a mesma página após a inserção dos dados
-        exit();
-      }
-    }
-//-----------------------------------ATUALIZAR DADOS-----------------------------------\\
-    if(isset($_POST['edit']))  //Se o botão de edição for clicado
-    {
-      if(isset($_POST['eid']))  //Verificar se o ID da linha a ser editada foi passado via POST
-      {
-        $eid = $_POST['eid']; //ID da linha a ser editada
-        header("Location: $_SERVER[PHP_SELF]?edit_id=$eid");  //Redireciona para a mesma página, mas com o ID da linha sendo editada
-        exit();
-      }
-    }
-    if(isset($_POST['update'])) //Se o botão de atualização for clicado
-    {
-      // Verifique se todos os campos necessários estão definidos
-      if(isset($_POST['id'], $_POST['new_inicio'], $_POST['new_fim'])) 
-      {
-        //Recuperar os dados do formulário de atualização
-        $id = $_POST['id'];
-        $new_inicio = $_POST['new_inicio'];
-        $new_fim = $_POST['new_fim'];
-        $new_di = $_POST['new_di'];
-        $new_df = $_POST['new_df'];
-        $new_inicio = $new_inicio . " " . $new_di;
-        $new_fim = $new_fim . " " . $new_df;
-        //Preparar a atualização das datas de início e de fim
-        $stmt = $conexao->prepare("UPDATE AVALIACOES SET INICIO = :ini, FIM = :fm WHERE ID = :id");
-        $stmt->bindParam(':id', $id);
-        $stmt->bindParam(':ini', $new_inicio);
-        $stmt->bindParam(':fm', $new_fim);
-        $stmt->execute(); //Executar a atualização dos dados na BD
-        header('Location: ' . $_SERVER['PHP_SELF']); //Redireciona para a mesma página após a atualização dos dados
-        exit();
-      }
-    }
-//-----------------------------------ELIMINAR DADOS-----------------------------------\\
-    if(isset($_POST['delete'])) //Se o botão de exclusão for clicado
-    {
-      if(isset($_POST['did']))  //Verificar se o ID da linha a ser excluída foi passado via POST
-      {
-        //Recuperar o ID da linha a ser excluída
-        $did = $_POST['did'];
-        //Preparar a exclusão da nova edição de UC
-        $stmt = $conexao->prepare("DELETE FROM AVALIACOES WHERE ID = :id");
-        $stmt->bindParam(':id', $did);
-        $stmt->execute(); //Executar a submissão dos dados na BD
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit();
-      }
-    }
-    $resultado = $conexao->query("SELECT * FROM AVALIACOES"); //Consultar os dados da BD
+  $datual = date('Y-m-d H:i:s');  //Data de hoje
 ?>
 <html lang="pt">
   <head>
-    <title>Cria&ccedil;&atilde;o de submiss&otilde;es</title>
+    <title>Submiss&atilde;o de relat&oacute;rios</title>
+    <script>
+        function mostrar() 
+        {
+          var uc = document.getElementById("FiltroDisciplinas").value;
+          document.getElementById("todos").style.display = "none";
+          document.getElementById("1").style.display = "none";
+          document.getElementById("2").style.display = "none";
+          if(uc == "0") document.getElementById("todos").style.display = "block";
+          else if(uc == "1") document.getElementById("1").style.display = "block";
+          else if(uc == "2") document.getElementById("2").style.display = "block";
+        }
+    </script>
   </head>
   <body>
-    <br>
-    <form action="sub_rel.php" method="POST">
-      <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
-    </form>
-    <br>
-    <br>
-    <b><u>Tabela Atual:</u></b>
-    <table border="1">
-      <tr>
-        <th>ID</th>
-        <th>EDICAO_UC</th>
-        <th>EPOCA</th>
-        <th>INICIO</th>
-        <th>FIM</th>
-        <th style='color: orange'>EDITAR LINHA</th>
-        <th style='color: red'>ELIMINAR LINHA</th>
-      </tr>
-      <?php
-        while($row = $resultado->fetchArray(SQLITE3_ASSOC)) //Mostrar cada linha da tabela
-        {
-          echo "<tr>";
-          echo "<td>" . $row['ID'] . "</td>";
-          echo "<td>" . $row['EDICAO_UC'] . "</td>";
-          echo "<td>" . $row['EPOCA'] . "</td>";
-          echo "<td>" . $row['INICIO'] . "</td>";
-          echo "<td>" . $row['FIM'] . "</td>";
-          //Botão de edição
-          echo "<td style='text-align:center'>";
-          if($_SESSION['user'] == "admin") //Se for ADMIN
-          {
-            if(isset($_GET['edit_id']) && $_GET['edit_id'] == $row['ID']) 
-            {
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-              echo "Nova Data de Início: <input type='date' name='new_inicio' value='" . $row['INICIO'] . "' required>";
-              echo "<input type='time' step='1' name='new_di' required><br>";
-              echo "Nova Data de Fim: <input type='date' name='new_fim' value='" . $row['FIM'] . "' required>";
-              echo "<input type='time' step='1' name='new_df' required><br>";
-              echo "<input type='submit' name='update' value='Atualizar'>";
-              echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
-              echo "</form>";
-            }
-            else 
-            {
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
-              echo "<input type='submit' name='edit' value='Editar'>";
-              echo "</form>";
-            }
-          }
-          else //Se não for ADMIN (mas for RUC)
-          {
-            $uc_sigla = $_SESSION['user_aka']; //Sigla do RUC
-            //Consultar a tabela UC para obter o ID da UC
-            $query_uc = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
-            $query_uc->bindValue(':sigla', $uc_sigla);
-            $result_uc = $query_uc->execute();
-            $uc_row = $result_uc->fetchArray(SQLITE3_ASSOC);  //Atribui o id das linhas(resultados) à variável
-            $uc_id = $uc_row['id'];
-            $edicao_uc_id = $row['EDICAO_UC']; // ID na coluna EDICAO_UC
-            if(isset($_GET['edit_id']) && $_GET['edit_id'] == $row['ID']) 
-            {
-              //Formulário de edição
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-              echo "Nova Data de Início: <input type='date' name='new_inicio' value='" . $row['INICIO'] . "' required>";
-              echo "<input type='time' step='1' name='new_di' required><br>";
-              echo "Nova Data de Fim: <input type='date' name='new_fim' value='" . $row['FIM'] . "' required>";
-              echo "<input type='time' step='1' name='new_df' required><br>";
-              echo "<input type='submit' name='update' value='Atualizar'>";
-              echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
-              echo "</form>";
-            }
-            else if($edicao_uc_id == $uc_id) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC
-            {
-              //Botão de edição
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
-              echo "<input type='submit' name='edit' value='Editar'>";
-              echo "</form>";
-            }
-            else echo"---";   //Se o UC não for do RUC
-          }
-          echo "</td>";
-          //Botão de exclusão
-          echo "<td style='text-align:center'>";
-          if($_SESSION['user'] == "admin") //Se for ADMIN
-          {
-            echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' name='did' value='" . $row['ID'] . "'>";
-            echo "<input type='submit' name='delete' value='Excluir'>";
-            echo "</form>";
-          }
-          else //Se não for ADMIN (mas for RUC)
-          {
-            $uc_sigla = $_SESSION['user_aka']; //Sigla do RUC
-            //Consultar a tabela UC para obter o ID da UC
-            $query_uc = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
-            $query_uc->bindValue(':sigla', $uc_sigla);
-            $result_uc = $query_uc->execute();
-            $uc_row = $result_uc->fetchArray(SQLITE3_ASSOC);  //Atribui o id das linhas(resultados) à variável
-            $uc_id = $uc_row['id'];
-            $edicao_uc_id = $row['EDICAO_UC']; // ID na coluna EDICAO_UC
-            if($edicao_uc_id == $uc_id) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC
-            {
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='did' value='" . $row['ID'] . "'>";
-              echo "<input type='submit' name='delete' value='Excluir'>";
-              echo "</form>";
-            }
-            else echo"---";   //Se o UC não for do RUC
-            echo "</td>";
-          }
-          echo "</tr>";
-        }
-      ?>
-    </table>
-    <br><br>
-    <b><u>Criação de um campo de submissão de relatórios:</u></b>
-    <form action="" method="POST">
-        ID da UC (tabela disponível em baixo): <input type="text" name="id" value="" autocomplete="off" placeholder="ID da UC" required>
-        <br>
-        Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
-          <option value='' selected disabled>Ver todas as épocas disponíveis</option>
-          <option value='Época Normal'>Época Normal</option>
-          <option value='Época de Recurso'>Época de Recurso</option>
-          <option value='Época Especial'>Época Especial</option>
-        </select>
-        <br>
-        Data de início: <input type="date" id="ini" name="inicio" required>
-        <input type="time" step="1" name="di" required>
-        <br>
-        Data de fim: <input type="date" id="fm" name="fim" required>
-        <input type="time" step="1" name="df" required>
-        <br>
-        <input type="submit" name="env" value="Enviar"/>
+    <?php
+      session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
+      session_start();  //Inicio de sessão
+
+      if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
+      {
+        header('Location: login.php');  //Redirecionar para a página de login
+        exit();
+      }
+//------------------------------------SEPARADOR ADMIN------------------------------------\\
+      if ($_SESSION['user'] == "admin") 
+      {
+        echo "<b><h2>Bem-vindo, professor " . $_SESSION['user_aka'] . "!"
+    ?>
+    <form action="login.php" style="display: inline; float: right;" method="POST">
+      <input type="submit" name="logout" value="Logout"/>
     </form>
     <?php
-      $resultado->reset();  //Limpar os resultados anteriores
-      $resultado = $conexao->query("SELECT * FROM UC"); //Consultar os dados da BD
+        echo "</b></h2><br>";
     ?>
-    <b><u>Tabela das edições das Unidades Curriculares:</u></b>
-    <table border="1">
-      <tr>
-        <th>ID</th>
-        <th>Sigla UC</th>
-        <th>Ano</th>
-        <th>RUC</th>
-      </tr>
+    <form action="criar_uc.php" method="POST">
+      <input type="submit" name="cuc" value="Criar/Excluir edição UC"/>
+    </form>
+    <br>
+    <form action="criar_av.php" style="display: inline;" method="POST">
+      <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+    </form>
+    <!--Selecionar UC-->
+    <br><br><b><h3>Listar Unidades Curriculares:</b>
+    <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
+      <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        while($row = $resultado->fetchArray(SQLITE3_ASSOC)) //Mostrar cada linha da tabela
+        $queryucruc = $conexao->prepare("SELECT id, SIGLA FROM UC WHERE RUC = :ruc_sigla");
+        $queryucruc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
+        $resultadoucruc = $queryucruc->execute();
+        while($row = $resultadoucruc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+        echo "</select></h3>";
+        echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
+        while($row)
         {
-          echo "<tr>";
-          echo "<td>" . $row['id'] . "</td>";
-          echo "<td>" . $row['SIGLA'] . "</td>";
-          echo "<td>" . $row['ANO'] . "</td>";
-          echo "<td>" . $row['RUC'] . "</td>";
-          echo "</tr>";
+          echo "<div id='" . $row['id'] . "' style='display: none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
+          //Verificar se existe uma edição aberta dentro do prazo
+          $resultado = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id");
+          $query->bindValue(':id', $row['id']);
+          $resultado = $query->execute();
+          if($resultado)
+          {
+            if ($resultado->fetchArray() != false) 
+            {
+              echo "Existem campos de submissão disponíveis neste momento:";
+              $resultado->reset();
+              echo "<br><br>";
+              while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+              {
+                $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
+                $dfinal = strtotime($row["FIM"]); //Converte a data do formato string para timestamp
+                $hoje = strtotime($datual); //Converte a data atual para timestamp
+                $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
+                echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
+        ?>
+    <form action="" enctype="multipart/form-data" method="POST">
+      <input type="file" name="file"/>
+      <input type="submit" name="enviar" value="Submeter"/>
+    </form>
+    <?php
+                if(isset($_POST["enviar"]))
+                {
+                  $arq = $_FILES["file"];
+                  $narq = explode(".", $arq["name"]);
+                  if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                  else
+                  {
+                    move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                    echo "Upload realizado";
+                  }
+                }
+                echo "<br>";
+              }
+            }
+            else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+          }
+          else echo "<br><b>Erro na consulta da base de dados.</b>";
+          echo "</div>";
         }
-      ?>
-    </table>
-    <br><br><br>
-    <b><u>NOTA IMPORTANTE:</u></b>
-    <ul><li>No âmbito da criação de uma submissão, <u>a UC deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC'.</li>
-    <?php  
-  }
-  else header('Location: error.php');
-  $conexao->close();  //Fechar conexão com o banco de dados
+      }
+//------------------------------------SEPARADOR RUC------------------------------------\\
+      else if ($_SESSION['user'] == "ruc") 
+      {
+        echo "<b><h2>Bem-vindo, professor " . $_SESSION['user_aka'] . "!"
+    ?>
+    <form action="login.php" style="display: inline; float: right;" method="POST">
+      <input type="submit" name="logout" value="Logout"/>
+    </form>
+    <?php
+        echo "</b></h2><br>";
+    ?>
+    <form action="criar_av.php" style="display: inline;" method="POST">
+      <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+    </form>
+    <!--Selecionar UC-->
+    <br><br><b><h3>Listar Unidades Curriculares:</b>
+    <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
+      <option value='0' selected>Ver todas as Unidades Curriculares</option>
+      <?php
+        $queryucruc = $conexao->prepare("SELECT id, SIGLA FROM UC WHERE RUC = :ruc_sigla");
+        $queryucruc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
+        $resultadoucruc = $queryucruc->execute();
+        while($row = $resultadoucruc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+        echo "</select></h3>";
+        echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
+        while($row)
+        {
+          echo "<div id='" . $row['id'] . "' style='display: none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
+          //Verificar se existe uma edição aberta dentro do prazo
+          $resultado = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id");
+          $query->bindValue(':id', $row['id']);
+          $resultado = $query->execute();
+          if($resultado)
+          {
+            if ($resultado->fetchArray() != false) 
+            {
+              echo "Existem campos de submissão disponíveis neste momento:";
+              $resultado->reset();
+              echo "<br><br>";
+              while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+              {
+                $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
+                $dfinal = strtotime($row["FIM"]); //Converte a data do formato string para timestamp
+                $hoje = strtotime($datual); //Converte a data atual para timestamp
+                $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
+                echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
+        ?>
+    <form action="" enctype="multipart/form-data" method="POST">
+      <input type="file" name="file"/>
+      <input type="submit" name="enviar" value="Submeter"/>
+    </form>
+    <?php
+                if(isset($_POST["enviar"]))
+                {
+                  $arq = $_FILES["file"];
+                  $narq = explode(".", $arq["name"]);
+                  if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                  else
+                  {
+                    move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                    echo "Upload realizado";
+                  }
+                }
+                echo "<br>";
+              }
+            }
+            else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+          }
+          else echo "<br><b>Erro na consulta da base de dados.</b>";
+          echo "</div>";
+        }
+      }
+//--------------------------------------SEPARADOR ALUNO--------------------------------------\\
+      else
+      {
+        echo "<b><h2>Bem-vindo, aluno nº" . $_SESSION['user_aka'] . "!"
+    ?>
+    <form action="login.php" style="display: inline; float: right;" method="POST">
+      <input type="submit" name="logout" value="Logout"/>
+    </form>
+    <?php
+        echo "</b></h2>";
+        //Botões para visualizar UCs e respetivos campos de submissão (com prazos visíveis)
+        echo "<br><b><h3>Listar Unidades Curriculares:</b>
+        <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
+          <option value='0' selected>Ver todas as Unidades Curriculares</option>
+          <option value='1' >Laborat&oacute;rio de Sistemas (LABSI)</option>
+          <option value='2' >Projeto / Est&aacute;gio (PESTA)</option>
+        </select></h3>";
+        echo "<div id='todos' style='display: block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
+        echo "<div id='labsi' style='display: none;'><h3><b>Campos de submissão para Laboratório de Sistemas (LABSI):</b></h3>";
+        //Verificar se existe uma edição aberta dentro do prazo
+        $resultado = $conexao->query("SELECT * FROM AVALIACOES WHERE EDICAO_UC = 1 AND INICIO <= '$datual' AND FIM >= '$datual'");
+        if($resultado)
+        {
+          if ($resultado->fetchArray() != false) 
+          {
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
+    ?>
+    <form action="" enctype="multipart/form-data" method="POST">
+			<input type="file" name="file"/>
+      <input type="submit" name="enviar" value="Submeter"/>
+    </form>
+    <?php
+              if(isset($_POST["enviar"]))
+              {
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
+              }
+              echo "<br>";
+            }
+          }
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+        }
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
+        echo "</div>";
+        echo "<div id='pesta' style='display: none;'><h3><b>Campos de submissão para Projeto / Estágio (PESTA):</b></h3>";
+        //Verificar se existe uma edição aberta dentro do prazo
+        $resultado = $conexao->query("SELECT * FROM AVALIACOES WHERE EDICAO_UC = 2 AND (INICIO <= '$datual' AND FIM >= '$datual') /*OR (INICIO <= '2024-05-18 15:16:00' AND FIM >= '2024-06-18 15:16:00')*/");
+        if($resultado)
+        {
+          if ($resultado->fetchArray() != false) 
+          {
+            echo "Existem campos de submissão disponíveis neste momento:";
+            $resultado->reset();
+            echo "<br><br>";
+            while ($row = $resultado->fetchArray(SQLITE3_ASSOC))
+            {
+              echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
+    ?>
+    <form action="" enctype="multipart/form-data" method="POST">
+      <input type="file" name="file"/>
+      <input type="submit" name="enviar" value="Submeter"/>
+    </form>
+    <?php
+              if(isset($_POST["enviar"]))
+              {
+                $arq = $_FILES["file"];
+                $narq = explode(".", $arq["name"]);
+                if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
+                else
+                {
+                  move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
+                  echo "Upload realizado";
+                }
+              }
+              echo "<br>";
+            }
+          }
+          else echo "<br><b>Não há nenhuma edição aberta dentro do prazo para submissão de relatórios.</b>";
+        }
+        else echo "<br><b>Erro na consulta da base de dados.</b>";
+        echo "</div>";
+      }
+    ?>
+    <?php
+      $conexao->close();  //Fechar conexão com o banco de dados
     ?>
   </body>
 </html>

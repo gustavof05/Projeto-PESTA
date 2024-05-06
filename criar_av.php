@@ -4,7 +4,12 @@
   date_default_timezone_set("Europe/Lisbon");
   session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
   session_start();  //Inicio de sessão
-  if ($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") //Esta página só funciona para ADMIN'S e RUC'S
+  if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
+  {
+    header('Location: login.php');  //Redirecionar para a página de login
+    exit();
+  }
+  if($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") //Esta página só funciona para ADMIN'S e RUC'S
   {
 //------------------------------------ENVIAR DADOS------------------------------------\\
     if(isset($_POST['env'])) //Se o formulário for enviado
@@ -137,15 +142,13 @@
             }
             else  //Se não for ADMIN (mas for RUC)
             {
-              $uc_sigla = $_SESSION['user_aka']; //Sigla do RUC
               //Consultar a tabela UC para obter o ID da UC
-              $queryuc = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
-              $queryuc->bindValue(':sigla', $uc_sigla);
-              $resultadouc = $queryuc->execute();
-              $uc_row = $resultadouc->fetchArray(SQLITE3_ASSOC);  //Atribui o id das linhas(resultados) à variável
-              $uc_id = $uc_row['id'];
-              $edicao_uc_id = $row['EDICAO_UC']; //ID na coluna EDICAO_UC
-              if($edicao_uc_id == $uc_id) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC
+              $queryucedit = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
+              $queryucedit->bindValue(':sigla', $_SESSION['user_aka']);
+              $resultadoucedit = $queryucedit->execute();
+              $uc_ids = array();
+              while($uc_row = $resultadoucedit->fetchArray(SQLITE3_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
+              if(in_array($row['EDICAO_UC'], $uc_ids)) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC (no array)
               {
                 echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";  //POSSO POR GET (LINHA 149)  ??????????????????
                 echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
@@ -167,15 +170,13 @@
           }
           else //Se não for ADMIN (mas for RUC)
           {
-            $uc_sigla = $_SESSION['user_aka']; //Sigla do RUC
             //Consultar a tabela UC para obter o ID da UC
-            $query_uc = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
-            $query_uc->bindValue(':sigla', $uc_sigla);
-            $result_uc = $query_uc->execute();
-            $uc_row = $result_uc->fetchArray(SQLITE3_ASSOC);  //Atribui o id das linhas(resultados) à variável
-            $uc_id = $uc_row['id'];
-            $edicao_uc_id = $row['EDICAO_UC']; // ID na coluna EDICAO_UC
-            if($edicao_uc_id == $uc_id) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC
+            $queryucremove = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
+            $queryucremove->bindValue(':sigla', $_SESSION['user_aka']);
+            $resultadoucremove = $queryucremove->execute();
+            $uc_ids = array();
+            while($uc_row = $resultadoucremove->fetchArray(SQLITE3_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
+            if(in_array($row['EDICAO_UC'], $uc_ids)) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC (no array)
             {
               echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
               echo "<input type='hidden' name='did' value='" . $row['ID'] . "'>";
@@ -192,22 +193,42 @@
     <br><br>
     <b><u>Criação de um campo de submissão de relatórios:</u></b>
     <form action="" method="POST">
-        ID da UC (tabela disponível em baixo): <input type="text" name="id" value="" autocomplete="off" placeholder="ID da UC" required>
-        <br>
-        Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
-          <option value='' selected disabled>Ver todas as épocas disponíveis</option>
-          <option value='Época Normal'>Época Normal</option>
-          <option value='Época de Recurso'>Época de Recurso</option>
-          <option value='Época Especial'>Época Especial</option>
-        </select>
-        <br>
-        Data de início: <input type="date" id="ini" name="inicio" required>
-        <input type="time" step="1" name="di" required>
-        <br>
-        Data de fim: <input type="date" id="fm" name="fim" required>
-        <input type="time" step="1" name="df" required>
-        <br>
-        <input type="submit" name="env" value="Enviar"/>
+      <?php
+        echo "ID da UC (tabela disponível em baixo): <select name='id' required>";
+        echo "<option value='' selected disabled>Ver todos os ID's das UC's disponíveis</option>";
+        if($_SESSION['user'] == "ruc")
+        {
+          $queryuccreate = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
+          $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
+          $resultadouccreate = $queryuccreate->execute();     
+          $ucids = array();
+          while($row = $resultadouccreate->fetchArray(SQLITE3_ASSOC)) $ucids[] = $row['id']; 
+          foreach($ucids as $uc_id) echo "<option value='$uc_id'>$uc_id</option>";
+        }
+        else
+        {
+          $queryuccreate = $conexao->prepare("SELECT id FROM UC");
+          $resultadouccreate = $queryuccreate->execute();     
+          $ucids = array();
+          while($row = $resultadouccreate->fetchArray(SQLITE3_ASSOC)) $ucids[] = $row['id']; 
+          foreach($ucids as $uc_id) echo "<option value='$uc_id'>$uc_id</option>";
+        }
+        echo "</select><br>";
+      ?>
+      Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
+        <option value='' selected disabled>Ver todas as épocas disponíveis</option>
+        <option value='Época Normal'>Época Normal</option>
+        <option value='Época de Recurso'>Época de Recurso</option>
+        <option value='Época Especial'>Época Especial</option>
+      </select>
+      <br>
+      Data de início: <input type="date" id="ini" name="inicio" required>
+      <input type="time" step="1" name="di" required>
+      <br>
+      Data de fim: <input type="date" id="fm" name="fim" required>
+      <input type="time" step="1" name="df" required>
+      <br>
+      <input type="submit" name="env" value="Enviar"/>
     </form>
     <?php
       $resultado->reset();  //Limpar os resultados anteriores

@@ -6,7 +6,7 @@
     <br>
     <br>
     <br>
-    <div style="text-align:center"><h1>Ocorreu algum erro com os dados de login</h1></div>
+    <div style="text-align:center"><h1>Ocorreu algum erro com os dados de login ou não tem permissões para entrar nesta páginas</h1></div>
     <br>
     <br>
     <br>

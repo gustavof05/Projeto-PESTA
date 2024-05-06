@@ -2,10 +2,14 @@
   $conexao = new SQLite3('bd_pesta.db');
   if(!$conexao) die("Erro ao conectar a base de dados."); //Houve erros na conexão
   date_default_timezone_set("Europe/Lisbon");
-
   session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
   session_start();  //Inicio de sessão
-  if ($_SESSION['user'] == "admin") 
+  if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
+  {
+    header('Location: login.php');  //Redirecionar para a página de login
+    exit();
+  }
+  if($_SESSION['user'] == "admin") //Esta página só funciona para ADMIN'S
   {
     if(isset($_POST['env'])) //Se o formulário for enviado
     {
