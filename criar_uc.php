@@ -94,7 +94,7 @@
         <input type="submit" name="env" value="Enviar"/>
       </form>
       <br><br>
-      <b><u>NOTAS IMPORTANTES:</u></b>
+      <b><u>NOTA IMPORTANTE:</u></b>
       <ul><li>O 'Ano' corresponde ao ano em que se inicia a Unidade Curricular.</li>
       <?php  
         $conexao->close();  //Fechar conexão com o banco de dados

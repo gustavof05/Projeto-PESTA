@@ -26,7 +26,6 @@
     <?php
       session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
       session_start();  //Inicio de sessão
-
       if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
       {
         header('Location: login.php');  //Redirecionar para a página de login
@@ -53,9 +52,9 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA FROM UC");
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");
         $resultadouc = $queryuc->execute();
-        while($row = $resultadouc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+        while($row = $resultadouc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         $resultadouc->reset();
@@ -81,22 +80,11 @@
                 $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                 echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
         ?>
-    <form action="" enctype="multipart/form-data" method="POST">
+    <form action="upload.php" enctype="multipart/form-data" method="POST">
       <input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-                if(isset($_POST["enviar"]))
-                {
-                  $arq = $_FILES["file"];
-                  $narq = explode(".", $arq["name"]);
-                  if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-                  else
-                  {
-                    move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-                    echo "Upload realizado";
-                  }
-                }
                 echo "<br>";
               }
             }
@@ -125,10 +113,10 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryucruc = $conexao->prepare("SELECT id, SIGLA FROM UC WHERE RUC = :ruc_sigla");
+        $queryucruc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla");
         $queryucruc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
         $resultadoucruc = $queryucruc->execute();
-        while($row = $resultadoucruc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+        while($row = $resultadoucruc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         $resultadoucruc->reset();
@@ -154,22 +142,11 @@
                 $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                 echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
         ?>
-    <form action="" enctype="multipart/form-data" method="POST">
+    <form action="upload.php" enctype="multipart/form-data" method="POST">
       <input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
     </form>
     <?php
-                if(isset($_POST["enviar"]))
-                {
-                  $arq = $_FILES["file"];
-                  $narq = explode(".", $arq["name"]);
-                  if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-                  else
-                  {
-                    move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-                    echo "Upload realizado";
-                  }
-                }
                 echo "<br>";
               }
             }
@@ -193,9 +170,9 @@
       <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA FROM UC");
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");
         $resultadouc = $queryuc->execute();
-        while($row = $resultadouc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+        while($row = $resultadouc->fetchArray(SQLITE3_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
         $resultadouc->reset();
@@ -217,22 +194,11 @@
               {
                 echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
       ?>
-      <form action="" enctype="multipart/form-data" method="POST">
+      <form action="upload.php" enctype="multipart/form-data" method="POST">
       <input type="file" name="file"/>
       <input type="submit" name="enviar" value="Submeter"/>
       </form>
       <?php
-                if(isset($_POST["enviar"]))
-                {
-                  $arq = $_FILES["file"];
-                  $narq = explode(".", $arq["name"]);
-                  if($narq[sizeof($narq)-1] != "pdf") die("Não é possível dar upload do arquivo");
-                  else
-                  {
-                    move_uploaded_file($arq["tmp_name"], "relatorios/" . $arq["name"]);
-                    echo "Upload realizado";
-                  }
-                }
                 echo "<br>";
               }
             }
@@ -243,6 +209,9 @@
         }
       }
     ?>
+    <br><br><br><br><br><br><br>
+    <b><u>NOTA IMPORTANTE:</u></b>
+      <ul><li>Os ficheiros a submeter devem estar compilados num ficheiro no formato .zip.</li>
     <?php
       $conexao->close();  //Fechar conexão com o banco de dados
     ?>

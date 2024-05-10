@@ -259,7 +259,7 @@
     <ul><li>No âmbito da criação de uma submissão, <u>a UC deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC'.</li>
     <?php  
   }
-  else header('Location: error.php');
+  else header("Location: error.php");
   $conexao->close();  //Fechar conexão com o banco de dados
     ?>
   </body>
