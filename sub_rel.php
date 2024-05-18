@@ -10,6 +10,16 @@
   }
   date_default_timezone_set("Europe/Lisbon");
   $datual = date('Y-m-d H:i:s');  //Data de hoje
+  //Ano letivo (próximas 2 linhas)
+  $alatual = date('Y');
+  if(($datual > date('Y-01-01')) && ($datual < date('Y-09-20'))) $alatual = date('Y', strtotime('-1 year'));
+  session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
+  session_start();  //Inicio de sessão
+  if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
+  {
+    header('Location: login.php');  //Redirecionar para a página de login
+    exit();
+  }
 ?>
 <html lang="pt">
   <head>
@@ -31,13 +41,6 @@
   </head>
   <body>
     <?php
-      session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
-      session_start();  //Inicio de sessão
-      if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
-      {
-        header('Location: login.php');  //Redirecionar para a página de login
-        exit();
-      }
 //------------------------------------SEPARADOR ADMIN------------------------------------\\
       if($_SESSION['user'] == "admin") 
       {
@@ -59,23 +62,24 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");  //Usamos o prepare para executarmos depois (2 vezes)
         $queryuc->execute();
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-        $queryuc->execute();
+        $queryuc->execute();  //"Refazer" a query
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id");
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
-          if($query->rowCount() > 0) 
+          if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
           {
             echo "Existem campos de submissão disponíveis neste momento:";
             echo "<br><br>";
+            $query->execute();  //"Refazer" a query
             while($row = $query->fetch(PDO::FETCH_ASSOC))
             {
               $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
@@ -97,7 +101,7 @@
         }
       }
 //------------------------------------SEPARADOR RUC------------------------------------\\
-      else if ($_SESSION['user'] == "ruc") 
+      else if($_SESSION['user'] == "ruc") 
       {
         echo "<b><h2>Bem-vindo, professor " . $_SESSION['user_aka'] . "!"
     ?>
@@ -115,25 +119,26 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla");
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla"); //Usamos o prepare para executarmos depois (2 vezes)
         $queryuc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
         $queryuc->execute();
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-        $queryuc->execute();
+        $queryuc->execute();  //"Refazer" a query
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id");
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
-          if ($query->rowCount() > 0) 
+          if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
           {
             echo "Existem campos de submissão disponíveis neste momento:";
             echo "<br><br>";
-            while ($row = $query->fetch(PDO::FETCH_ASSOC))
+            $query->execute();  //"Refazer" a query
+            while($row = $query->fetch(PDO::FETCH_ASSOC))
             {
               $dinicial = strtotime($row["INICIO"]); //Converte a data do formato string para timestamp
               $dfinal = strtotime($row["FIM"]); //Converte a data do formato string para timestamp
@@ -167,24 +172,26 @@
       <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :alatual");  //Usamos o prepare para executarmos depois (2 vezes)
+        $queryuc->bindValue(':alatual', $alatual);
         $queryuc->execute();
-        while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
+        while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
         echo "</select></h3>";
         echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-        $queryuc->execute();
+        $queryuc->execute();  //"Refazer" a query
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id AND INICIO <= '$datual' AND FIM >= '$datual'");
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id AND INICIO <= '$datual' AND FIM >= '$datual'");  //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
-          if($query->rowCount() > 0) 
+          if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
           {
             echo "Existem campos de submissão disponíveis neste momento:";
             echo "<br><br>";
-            while ($row = $query->fetch(PDO::FETCH_ASSOC))
+            $query->execute();  //"Refazer" a query
+            while($row = $query->fetch(PDO::FETCH_ASSOC))
             {
               echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
       ?>

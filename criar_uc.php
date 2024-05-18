@@ -18,24 +18,48 @@
   }
   if($_SESSION['user'] == "admin") //Esta página só funciona para ADMIN'S
   {
+//------------------------------------ENVIAR DADOS------------------------------------\\
     if(isset($_POST['env'])) //Se o formulário for enviado
     {
-      if(isset($_POST['sig'], $_POST['ano'], $_POST['ruc'])) //Verificar se todos os campos foram preenchidos
+      if(isset($_POST['sig'], $_POST['ano'], $_POST['ruc']))
       {
         //Recuperar os dados do formulário
         $sigla = strtoupper($_POST['sig']);
         $ano = $_POST['ano'];
         $ruc = strtoupper($_POST['ruc']);
         //Preparar a inserção da nova edição de UC
-        $stmt = $conexao->prepare("INSERT INTO UC (SIGLA, ANO, RUC) VALUES (:sigla, :ano, :ruc)");
-        $stmt->bindParam(':sigla', $sigla);
-        $stmt->bindParam(':ano', $ano);
-        $stmt->bindParam(':ruc', $ruc);
-        $stmt->execute(); //Executar a submissão dos dados na BD
+        $query = $conexao->prepare("INSERT INTO UC (SIGLA, ANO, RUC) VALUES (:sigla, :ano, :ruc)");
+        $query->bindParam(':sigla', $sigla);
+        $query->bindParam(':ano', $ano);
+        $query->bindParam(':ruc', $ruc);
+        $query->execute(); //Executar a submissão dos dados na BD
         header('Location: ' . $_SERVER['PHP_SELF']); //Redirecionar para esta página após a inserção dos dados
         exit();
       }
     }
+//-----------------------------------ATUALIZAR DADOS-----------------------------------\\
+    if(isset($_POST['edit']))  //Se o botão de edição for clicado
+    {
+      if(isset($_POST['eid'], $_POST['esigla']))
+      {
+        header("Location: $_SERVER[PHP_SELF]?edit_id=" . $_POST['eid'] . "&edit_sigla=" . $_POST['esigla'] . "");  //Redireciona para a mesma página, mas com o ID da linha a ser editada
+        exit();
+      }
+    }
+    if (isset($_POST['update'])) //Se o botão de atualização for clicado
+    {
+      if (isset($_POST['id'], $_POST['new_ano']))
+      {
+        //Preparar a atualização do ano da UC
+        $query = $conexao->prepare("UPDATE UC SET ANO = :ano WHERE id = :id");
+        $query->bindValue(':ano', $_POST['new_ano']);
+        $query->bindValue(':id', $_POST['id']);
+        $query->execute(); //Executar a submissão dos dados na BD
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
+      }
+    }
+//-----------------------------------ELIMINAR DADOS-----------------------------------\\
     if(isset($_POST['delete'])) //Se o botão de exclusão for clicado
     {
       if(isset($_POST['did']))  //Verificar se o ID da linha a ser excluída foi passado via POST
@@ -43,9 +67,9 @@
         //Recuperar o ID da linha a ser excluída
         $did = $_POST['did'];
         //Preparar a exclusão da nova edição de UC
-        $stmt = $conexao->prepare("DELETE FROM UC WHERE id = :id");
-        $stmt->bindParam(':id', $did);
-        $stmt->execute(); //Executar a submissão dos dados na BD
+        $query = $conexao->prepare("DELETE FROM UC WHERE id = :id");
+        $query->bindParam(':id', $did);
+        $query->execute(); //Executar a submissão dos dados na BD
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit();
       }
@@ -67,8 +91,8 @@
       <table border="1">
         <tr>
           <th>ID</th>
-          <th>Sigla UC</th>
-          <th>Ano</th>
+          <th>SIGLA DA UC</th>
+          <th>ANO</th>
           <th>RUC</th>
           <th style='color: red'>ELIMINAR LINHA</th>
         </tr>
@@ -76,11 +100,31 @@
           while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
           {
             echo "<tr>";
-            echo "<td>" . $row['id'] . "</td>";
-            echo "<td>" . $row['SIGLA'] . "</td>";
-            echo "<td>" . $row['ANO'] . "</td>";
-            echo "<td>" . $row['RUC'] . "</td>";
-            // Botão de exclusão
+            echo "<td style='text-align:center'>" . $row['id'] . "</td>";
+            echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
+            //Edição
+            echo "<td style='text-align:center'>";
+            if(isset($_GET['edit_id']) && $_GET['edit_id'] == $row['id']) //Formulário de edição
+            {
+              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+              echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
+              echo "Novo Ano (Letivo): <input type='text' name='new_ano' value='" . $row['ANO'] . "' required>";
+              echo "<input type='submit' name='update' value='Atualizar'>";
+              echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
+              echo "</form>";
+            }
+            else //Botão de edição
+            {
+              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+              echo "<input type='hidden' name='eid' value='" . $row['id'] . "'>";
+              echo "<input type='hidden' name='esigla' value='" . $row['SIGLA'] . "'>";
+              echo $row['ANO'] . " ";
+              echo "<input type='submit' name='edit' value='Editar'>";
+              echo "</form>";
+            }
+            echo "</td>";
+            echo "<td style='text-align:center'>" . $row['RUC'] . "</td>";
+            //Botão de exclusão
             echo "<td style='text-align:center'><form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
             echo "<input type='hidden' style='middle' name='did' value='" . $row['id'] . "'>";
             echo "<input type='submit' name='delete' value='Excluir'>";
@@ -102,8 +146,8 @@
       </form>
       <br><br>
       <b><u>NOTA IMPORTANTE:</u></b>
-      <ul><li>O 'Ano' corresponde ao ano em que se inicia a Unidade Curricular.</li>
-      <ul><li>Antes de eliminar uma Unidade Curricular, elimine as avaliações associadas à mesma.</li>
+      <ul><li>O 'ANO' corresponde ao Ano Letivo em que se inicia a Unidade Curricular. <b>Exemplo: <u>Ano Letivo:20XX/20YY</u> --> <u>ANO:20XX</u></b></li>
+      <li>Antes de eliminar uma Unidade Curricular, <u>elimine as avaliações associadas à mesma</u>.</li></ul>
       <?php  
   }
   else header('Location: error.php');
