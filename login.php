@@ -1,6 +1,13 @@
 <?php
-  $conexao = new SQLite3('bd_pesta.db');
-  if(!$conexao) die("Erro ao conectar a base de dados."); //Houve erros na conexão
+  try
+  {
+    $conexao = new PDO('sqlite:bd_pesta.db');
+    $conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } 
+  catch (PDOException $e) 
+  {
+    die("Erro ao conectar a base de dados: " . $e->getMessage()); //Houve erros na conexão
+  }
 ?>
 <html lang="pt">
   <head>
@@ -24,21 +31,16 @@
           else if((strpos($_SESSION['user'], "@") == true) && (strlen($_SESSION['user']) == 15))  //Se for DOCENTE
           {
             $docente = $_SESSION['user_aka'];
-            $resultado = $conexao->query("SELECT * FROM UC WHERE RUC = '$docente'");
+            $query = $conexao->prepare("SELECT * FROM UC WHERE RUC = :dct");
+            $query->bindParam(':dct', $docente);
+            $query->execute();
+            $resultado = $query->fetch(PDO::FETCH_ASSOC);
             if($resultado)  //Se a tabela tiver resultados
             {
-              if ($resultado->fetchArray(SQLITE3_ASSOC))  //E for RUC
-              {
-                $_SESSION['user'] = "ruc";
-                $resultado->reset();  //Limpar os resultados anteriores
-                header('Location: sub_rel.php');
-              }
-              else 
-              {
-                $resultado->reset();  //Limpar os resultados anteriores
-                header('Location: error.php'); //É um DOCENTE não RUC nem ADMIN             ????????
-              }
+              $_SESSION['user'] = "ruc";
+              header('Location: sub_rel.php');              
             }
+            else header('Location: error.php'); //É um DOCENTE não-ADMIN e não-RUC
           }
           else if((strpos($_SESSION['user'], "@") == true) && (strlen($_SESSION['user']) == 19)) header('Location: sub_rel.php');  //ALUNO 
           else header('Location: error.php');
@@ -52,7 +54,7 @@
         <input type="submit" name="login" value="Login"/>
     </form>
     <?php
-      $conexao->close();  //Fechar conexão com o banco de dados
+      $conexao = null;  //Fechar conexão com o banco de dados
     ?>
   </body>
 </html>

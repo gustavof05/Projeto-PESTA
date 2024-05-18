@@ -1,6 +1,13 @@
 <?php
-  $conexao = new SQLite3('bd_pesta.db');
-  if(!$conexao) die("Erro ao conectar a base de dados."); //Houve erros na conexão
+  try
+  {
+    $conexao = new PDO('sqlite:bd_pesta.db');
+    $conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } 
+  catch (PDOException $e) 
+  {
+    die("Erro ao conectar a base de dados: " . $e->getMessage()); //Houve erros na conexão
+  }
   date_default_timezone_set("Europe/Lisbon");
   session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
   session_start();  //Inicio de sessão
@@ -66,7 +73,7 @@
           <th style='color: red'>ELIMINAR LINHA</th>
         </tr>
         <?php
-          while($row = $resultado->fetchArray(SQLITE3_ASSOC)) //Mostrar cada linha da tabela
+          while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
           {
             echo "<tr>";
             echo "<td>" . $row['id'] . "</td>";
@@ -96,10 +103,11 @@
       <br><br>
       <b><u>NOTA IMPORTANTE:</u></b>
       <ul><li>O 'Ano' corresponde ao ano em que se inicia a Unidade Curricular.</li>
+      <ul><li>Antes de eliminar uma Unidade Curricular, elimine as avaliações associadas à mesma.</li>
       <?php  
-        $conexao->close();  //Fechar conexão com o banco de dados
   }
   else header('Location: error.php');
+  $conexao = null;  //Fechar conexão com o banco de dados
       ?>
   </body>
 </html>

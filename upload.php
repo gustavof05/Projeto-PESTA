@@ -10,7 +10,7 @@
       {
         if($_FILES["file"]["error"] == UPLOAD_ERR_OK) //Verificar se não há erros durante o envio
         {
-          $extensoes = array("zip", "rar"); //Extensões permitidas
+          $extensoes = array("zip"); //Extensões permitidas
           $file_extension = pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION);  //Obtém a extensão do arquivo          if(in_array($file_type,  $allowed_file_types)) 
           if(in_array(strtolower($file_extension), $extensoes))
           {
@@ -24,7 +24,7 @@
               else echo "Ocorreu um erro ao tentar fazer o upload do arquivo";
             }
           }
-          else echo "Apenas arquivos ZIP e RAR são permitidos";
+          else echo "Apenas arquivos ZIP são permitidos";
         } 
         else echo "Ocorreu um erro durante o envio do arquivo";
       }

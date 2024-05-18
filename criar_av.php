@@ -1,6 +1,13 @@
 <?php
-  $conexao = new SQLite3('bd_pesta.db');
-  if(!$conexao) die("Erro ao conectar a base de dados."); //Houve erros na conexão
+  try
+  {
+    $conexao = new PDO('sqlite:bd_pesta.db');
+    $conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } 
+  catch (PDOException $e) 
+  {
+    die("Erro ao conectar a base de dados: " . $e->getMessage()); //Houve erros na conexão
+  }
   date_default_timezone_set("Europe/Lisbon");
   session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
   session_start();  //Inicio de sessão
@@ -109,7 +116,7 @@
         <th style='color: red'>ELIMINAR LINHA</th>
       </tr>
       <?php
-        while($row = $resultado->fetchArray(SQLITE3_ASSOC)) //Mostrar cada linha da tabela
+        while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
         {
           echo "<tr>";
           echo "<td>" . $row['ID'] . "</td>";
@@ -145,9 +152,9 @@
               //Consultar a tabela UC para obter o ID da UC
               $queryucedit = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
               $queryucedit->bindValue(':sigla', $_SESSION['user_aka']);
-              $resultadoucedit = $queryucedit->execute();
+              $queryucedit->execute();
               $uc_ids = array();
-              while($uc_row = $resultadoucedit->fetchArray(SQLITE3_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
+              while($uc_row = $queryucedit->fetch(PDO::FETCH_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
               if(in_array($row['EDICAO_UC'], $uc_ids)) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC (no array)
               {
                 echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";  //POSSO POR GET (LINHA 149)  ??????????????????
@@ -173,9 +180,9 @@
             //Consultar a tabela UC para obter o ID da UC
             $queryucremove = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
             $queryucremove->bindValue(':sigla', $_SESSION['user_aka']);
-            $resultadoucremove = $queryucremove->execute();
+            $queryucremove->execute();
             $uc_ids = array();
-            while($uc_row = $resultadoucremove->fetchArray(SQLITE3_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
+            while($uc_row = $queryucremove->fetch(PDO::FETCH_ASSOC)) $uc_ids[] = $uc_row['id'];  //Atribui o id das linhas(resultados) ao array
             if(in_array($row['EDICAO_UC'], $uc_ids)) //Verificar se o id da UC do RUC corresponde ao id da EDICAO_UC (no array)
             {
               echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
@@ -200,17 +207,16 @@
         {
           $queryuccreate = $conexao->prepare("SELECT id FROM UC WHERE RUC = :sigla");
           $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
-          $resultadouccreate = $queryuccreate->execute();     
+          $queryuccreate->execute();     
           $ucids = array();
-          while($row = $resultadouccreate->fetchArray(SQLITE3_ASSOC)) $ucids[] = $row['id']; 
+          while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) $ucids[] = $row['id']; 
           foreach($ucids as $uc_id) echo "<option value='$uc_id'>$uc_id</option>";
         }
         else
         {
-          $queryuccreate = $conexao->prepare("SELECT id FROM UC");
-          $resultadouccreate = $queryuccreate->execute();     
+          $queryuccreate = $conexao->query("SELECT id FROM UC");
           $ucids = array();
-          while($row = $resultadouccreate->fetchArray(SQLITE3_ASSOC)) $ucids[] = $row['id']; 
+          while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) $ucids[] = $row['id']; 
           foreach($ucids as $uc_id) echo "<option value='$uc_id'>$uc_id</option>";
         }
         echo "</select><br>";
@@ -231,7 +237,6 @@
       <input type="submit" name="env" value="Enviar"/>
     </form>
     <?php
-      $resultado->reset();  //Limpar os resultados anteriores
       $resultado = $conexao->query("SELECT * FROM UC"); //Consultar os dados da BD
     ?>
     <b><u>Tabela das edições das Unidades Curriculares:</u></b>
@@ -243,7 +248,7 @@
         <th>RUC</th>
       </tr>
       <?php
-        while($row = $resultado->fetchArray(SQLITE3_ASSOC)) //Mostrar cada linha da tabela
+        while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
         {
           echo "<tr>";
           echo "<td>" . $row['id'] . "</td>";
@@ -260,7 +265,7 @@
     <?php  
   }
   else header("Location: error.php");
-  $conexao->close();  //Fechar conexão com o banco de dados
+  $conexao = null;  //Fechar conexão com o banco de dados
     ?>
   </body>
 </html>
