@@ -62,7 +62,8 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC");  //Usamos o prepare para executarmos depois (2 vezes)
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :alatual");  //Usamos o prepare para executarmos depois (2 vezes)
+        $queryuc->bindParam(':alatual', $alatual);
         $queryuc->execute();
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
@@ -119,8 +120,9 @@
     <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
-        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla"); //Usamos o prepare para executarmos depois (2 vezes)
+        $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla AND ANO = :alatual"); //Usamos o prepare para executarmos depois (2 vezes)
         $queryuc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
+        $queryuc->bindParam(':alatual', $alatual);
         $queryuc->execute();
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
         echo "</select></h3>";
@@ -173,7 +175,7 @@
       <option value='0' selected>Ver todas as Unidades Curriculares</option>
       <?php
         $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :alatual");  //Usamos o prepare para executarmos depois (2 vezes)
-        $queryuc->bindValue(':alatual', $alatual);
+        $queryuc->bindParam(':alatual', $alatual);
         $queryuc->execute();
         while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
         echo "</select></h3>";

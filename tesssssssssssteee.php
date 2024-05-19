@@ -221,7 +221,7 @@
           $uc_id = $ucids[$i];
           $uc_sigla = $ucsiglas[$i];
           $uc_ano = $ucanos[$i];
-          echo "<option value='$uc_id'>$uc_sigla $uc_ano</option>";
+          echo "<option value='$uc_id'>$uc_sigla | $uc_ano</option>";
         }
         echo "</select><br>";
       ?>
