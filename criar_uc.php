@@ -75,83 +75,112 @@
       }
     }
     $resultado = $conexao->query("SELECT * FROM UC"); //Consultar os dados da BD
-  ?>
-  <html lang="pt">
-    <head>
-      <title>Cria&ccedil;&atilde;o de submiss&otilde;es</title>
-    </head>
-    <body>
-      <br>
-      <form action="sub_rel.php" method="POST">
-        <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
-      </form>
-      <br>
-      <br>
-      <b><u>Tabela Atual:</u></b>
-      <table border="1">
-        <tr>
-          <th>ID</th>
-          <th>SIGLA DA UC</th>
-          <th>ANO</th>
-          <th>RUC</th>
-          <th style='color: red'>ELIMINAR LINHA</th>
-        </tr>
-        <?php
-          while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
-          {
-            echo "<tr>";
-            echo "<td style='text-align:center'>" . $row['id'] . "</td>";
-            echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
-            //Edição
-            echo "<td style='text-align:center'>";
-            if(isset($_GET['edit_id']) && $_GET['edit_id'] == $row['id']) //Formulário de edição
+?>
+<html lang="pt">
+  <head>
+    <title>Cria&ccedil;&atilde;o de submiss&otilde;es</title>
+    <style>
+    .container 
+    {
+      max-width: 1024px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    body 
+    {
+      text-align: center;
+    }
+    .content 
+    {
+      text-align: left;
+      margin: 0 auto;
+      max-width: 1024px;
+    }
+    .banner img 
+    {
+      width: 100%;
+      height: auto;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="banner">
+        <img src="https://www.dee.isep.ipp.pt/uploads/ISEP_DEP/BANNER-2022.png" alt="Banner ISEP">
+      </div>
+      <div class="content">
+        <br>
+        <form action="sub_rel.php" method="POST">
+          <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
+        </form>
+        <br><br>
+        <b><u>Tabela Atual:</u></b>
+        <table border="1">
+          <tr>
+            <th>ID</th>
+            <th>SIGLA DA UC</th>
+            <th>ANO</th>
+            <th>RUC</th>
+            <th style='color: red'>ELIMINAR LINHA</th>
+          </tr>
+          <?php
+            while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
             {
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
-              echo "Novo Ano (Letivo): <input type='text' name='new_ano' value='" . $row['ANO'] . "' required>";
-              echo "<input type='submit' name='update' value='Atualizar'>";
-              echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
-              echo "</form>";
+              echo "<tr>";
+              echo "<td style='text-align:center'>" . $row['id'] . "</td>";
+              echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
+              //Edição
+              echo "<td style='text-align:center'>";
+              if(isset($_GET['edit_id']) && $_GET['edit_id'] == $row['id']) //Formulário de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='id' value='" . $row['id'] . "'>";
+                echo "Novo Ano (Letivo): <input type='text' name='new_ano' value='" . $row['ANO'] . "' required>";
+                echo "<input type='submit' name='update' value='Atualizar'>";
+                echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
+                echo "</form>";
+              }
+              else //Botão de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='eid' value='" . $row['id'] . "'>";
+                echo "<input type='hidden' name='esigla' value='" . $row['SIGLA'] . "'>";
+                echo $row['ANO'] . " ";
+                echo "<input type='submit' name='edit' value='Editar'>";
+                echo "</form>";
+              }
+              echo "</td>";
+              echo "<td style='text-align:center'>" . $row['RUC'] . "</td>";
+              //Botão de exclusão
+              echo "<td style='text-align:center'><form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+              echo "<input type='hidden' style='middle' name='did' value='" . $row['id'] . "'>";
+              echo "<input type='submit' name='delete' value='Excluir'>";
+              echo "</form></td>";
+              echo "</tr>";
             }
-            else //Botão de edição
-            {
-              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-              echo "<input type='hidden' name='eid' value='" . $row['id'] . "'>";
-              echo "<input type='hidden' name='esigla' value='" . $row['SIGLA'] . "'>";
-              echo $row['ANO'] . " ";
-              echo "<input type='submit' name='edit' value='Editar'>";
-              echo "</form>";
-            }
-            echo "</td>";
-            echo "<td style='text-align:center'>" . $row['RUC'] . "</td>";
-            //Botão de exclusão
-            echo "<td style='text-align:center'><form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' style='middle' name='did' value='" . $row['id'] . "'>";
-            echo "<input type='submit' name='delete' value='Excluir'>";
-            echo "</form></td>";
-            echo "</tr>";
-          }
+          ?>
+        </table>
+        <br>
+        <br><b><u>Criação de uma edição de uma Unidade Curricular:</u></b>
+        <form action="" method="POST">
+          Sigla da Unidade Curricular: <input type="text" name="sig" value="" autocomplete="off" placeholder="Sigla da UC" required>
+          <br>
+          Ano: <input type="text" name="ano" value="" autocomplete="off" placeholder="Ano" required>
+          <br>
+          Responsável da Unidade Curricular: <input type="text" name="ruc" value="" autocomplete="off" placeholder="RUC" required>
+          <br>
+          <input type="submit" name="env" value="Enviar"/>
+        </form>
+        <br><br>
+        <b><u>NOTA IMPORTANTE:</u></b>
+        <ul><li>O 'ANO' corresponde ao Ano Letivo em que se inicia a Unidade Curricular. <b>Exemplo: <u>Ano Letivo:20XX/20YY</u> --> <u>ANO:20XX</u></b></li>
+        <li>Antes de eliminar uma Unidade Curricular, <u>elimine as avaliações associadas à mesma</u>.</li></ul>
+        <?php  
+    }
+    else header('Location: error.php');
+    $conexao = null;  //Fechar conexão com o banco de dados
         ?>
-      </table>
-      <br>
-      <br><b><u>Criação de uma edição de uma Unidade Curricular:</u></b>
-      <form action="" method="POST">
-        Sigla da Unidade Curricular: <input type="text" name="sig" value="" autocomplete="off" placeholder="Sigla da UC" required>
-        <br>
-        Ano: <input type="text" name="ano" value="" autocomplete="off" placeholder="Ano" required>
-        <br>
-        Responsável da Unidade Curricular: <input type="text" name="ruc" value="" autocomplete="off" placeholder="RUC" required>
-        <br>
-        <input type="submit" name="env" value="Enviar"/>
-      </form>
-      <br><br>
-      <b><u>NOTA IMPORTANTE:</u></b>
-      <ul><li>O 'ANO' corresponde ao Ano Letivo em que se inicia a Unidade Curricular. <b>Exemplo: <u>Ano Letivo:20XX/20YY</u> --> <u>ANO:20XX</u></b></li>
-      <li>Antes de eliminar uma Unidade Curricular, <u>elimine as avaliações associadas à mesma</u>.</li></ul>
-      <?php  
-  }
-  else header('Location: error.php');
-  $conexao = null;  //Fechar conexão com o banco de dados
-      ?>
+      </div>
+    </div>
   </body>
 </html>

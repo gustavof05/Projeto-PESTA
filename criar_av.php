@@ -114,139 +114,168 @@
 <html lang="pt">
   <head>
     <title>Cria&ccedil;&atilde;o de submiss&otilde;es</title>
+    <style>
+      .container 
+      {
+        max-width: 1024px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      body 
+      {
+        text-align: center;
+      }
+      .content 
+      {
+        text-align: left;
+        margin: 0 auto;
+        max-width: 1024px;
+      }
+      .banner img 
+      {
+        width: 100%;
+        height: auto;
+      }
+    </style>
   </head>
   <body>
-    <br>
-    <form action="sub_rel.php" method="POST">
-      <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
-    </form>
-    <br>
-    <br>
-    <b><u>Tabela Atual:</u></b>
-    <table border="1">
-      <tr>
-        <th>ID</th>
-        <th>EDIÇÃO UC</th>
-        <th>ÉPOCA</th>
-        <th>INICIO</th>
-        <th>FIM</th>
-        <th style='color: red'>ELIMINAR LINHA</th>
-      </tr>
-      <?php
-        while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
-        {
-          echo "<tr>";
-          echo "<td style='text-align:center'>" . $row['ID'] . "</td>";
-          echo "<td style='text-align:center'>" . $row['SIGLA'] . " | " . $row['ANO'] . "</td>";
-          echo "<td style='text-align:center'>" . $row['EPOCA'] . "</td>";
-          echo "<td style='text-align:center'>";
-          //Edição - Data Inicial
-          if(isset($_GET['edit_id'], $_GET['edit_data']) && $_GET['edit_id'] == $row['ID'] && $_GET['edit_data'] == "datainicial") //Formulário de edição
-          {
-            echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-            echo "Nova Data de Início: <input type='date' name='new_inicio' required>";
-            echo "<input type='time' step='1' name='new_di' required><br>";
-            echo "<input type='submit' name='updatei' value='Atualizar'>";
-            echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
-            echo "</form>";
-          }
-          else  //Botão de edição
-          {
-            echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
-            echo "<input type='hidden' name='edi' value='datainicial'>";
-            echo $row['INICIO'] . " ";
-            echo "<input type='submit' name='editi' value='Editar'>";
-            echo "</form>";
-          }
-          echo "</td>";
-          //Edição - Data Final
-          echo "<td style='text-align:center'>";
-          if(isset($_GET['edit_id'], $_GET['edit_data']) && $_GET['edit_id'] == $row['ID'] && $_GET['edit_data'] == "datafinal") //Formulário de edição
-          {
-            echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-            echo "Nova Data de Início: <input type='date' name='new_fim' required>";
-            echo "<input type='time' step='1' name='new_df' required><br>";
-            echo "<input type='submit' name='updatef' value='Atualizar'>";
-            echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
-            echo "</form>";
-          }
-          else  //Botão de edição
-          {
-            echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-            echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
-            echo "<input type='hidden' name='edf' value='datafinal'>";
-            echo $row['FIM'] . " ";
-            echo "<input type='submit' name='editf' value='Editar'>";
-            echo "</form>";
-          }
-          echo "</td>";
-          //Botão de exclusão
-          echo "<td style='text-align:center'>";
-          echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
-          echo "<input type='hidden' name='did' value='" . $row['ID'] . "'>";
-          echo "<input type='submit' name='delete' value='Excluir'>";
-          echo "</form>";
-          echo "</td>";
-          echo "</tr>";
-        }
-      ?>
-    </table>
-    <br><br>
-    <b><u>Criação de um campo de submissão de relatórios:</u></b>
-    <form action="" method="POST">
-      <?php
-        echo "Unidade Curricular: <select name='id' required>";
-        echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
-        if($_SESSION['user'] == "ruc")  //Se for RUC
-        {
-          $queryuccreate = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :sigla");
-          $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
-          $queryuccreate->execute();
-        }
-        else $queryuccreate = $conexao->query("SELECT id, SIGLA, ANO FROM UC"); //Se for ADMIN
-        $ucids = array();
-        $ucsiglas = array();
-        $ucanos = array();
-        while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) 
-        {
-          $ucids[] = $row['id'];
-          $ucsiglas[] = $row['SIGLA'];
-          $ucanos[] = $row['ANO'];
-        }
-        for($i = 0; $i < count($ucsiglas); $i++) 
-        {
-          $uc_id = $ucids[$i];
-          $uc_sigla = $ucsiglas[$i];
-          $uc_ano = $ucanos[$i];
-          echo "<option value='$uc_id'>$uc_sigla | $uc_ano</option>";
-        }
-        echo "</select><br>";
-      ?>
-      Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
-        <option value='' selected disabled>Ver todas as épocas disponíveis</option>
-        <option value='Época Normal'>Época Normal</option>
-        <option value='Época de Recurso'>Época de Recurso</option>
-        <option value='Época Especial'>Época Especial</option>
-      </select>
-      <br>
-      Data de início: <input type="date" id="ini" name="inicio" required>
-      <input type="time" step="1" name="di" required>
-      <br>
-      Data de fim: <input type="date" id="fm" name="fim" required>
-      <input type="time" step="1" name="df" required>
-      <br>
-      <input type="submit" name="env" value="Enviar"/>
-    </form>
-    <br><br><br>
-    <b><u>NOTA IMPORTANTE:</u></b>
-    <ul><li>No âmbito da criação de uma submissão, <u>a Unidade Curricular deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC' ou pedir a um ADMINISTRADOR.</li>
-    <?php  
+    <div class="container">
+      <div class="banner">
+        <img src="https://www.dee.isep.ipp.pt/uploads/ISEP_DEP/BANNER-2022.png" alt="Banner ISEP">
+      </div>
+      <div class="content">
+        <br>
+        <form action="sub_rel.php" method="POST">
+          <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
+        </form>
+        <br><br>
+        <b><u>Tabela Atual:</u></b>
+        <table border="1">
+          <tr>
+            <th>ID</th>
+            <th>EDIÇÃO UC</th>
+            <th>ÉPOCA</th>
+            <th>INICIO</th>
+            <th>FIM</th>
+            <th style='color: red'>ELIMINAR LINHA</th>
+          </tr>
+          <?php
+            while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
+            {
+              echo "<tr>";
+              echo "<td style='text-align:center'>" . $row['ID'] . "</td>";
+              echo "<td style='text-align:center'>" . $row['SIGLA'] . " | " . $row['ANO'] . "</td>";
+              echo "<td style='text-align:center'>" . $row['EPOCA'] . "</td>";
+              echo "<td style='text-align:center'>";
+              //Edição - Data Inicial
+              if(isset($_GET['edit_id'], $_GET['edit_data']) && $_GET['edit_id'] == $row['ID'] && $_GET['edit_data'] == "datainicial") //Formulário de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
+                echo "Nova Data de Início: <input type='date' name='new_inicio' required>";
+                echo "<input type='time' step='1' name='new_di' required><br>";
+                echo "<input type='submit' name='updatei' value='Atualizar'>";
+                echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
+                echo "</form>";
+              }
+              else  //Botão de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
+                echo "<input type='hidden' name='edi' value='datainicial'>";
+                echo $row['INICIO'] . " ";
+                echo "<input type='submit' name='editi' value='Editar'>";
+                echo "</form>";
+              }
+              echo "</td>";
+              //Edição - Data Final
+              echo "<td style='text-align:center'>";
+              if(isset($_GET['edit_id'], $_GET['edit_data']) && $_GET['edit_id'] == $row['ID'] && $_GET['edit_data'] == "datafinal") //Formulário de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
+                echo "Nova Data de Início: <input type='date' name='new_fim' required>";
+                echo "<input type='time' step='1' name='new_df' required><br>";
+                echo "<input type='submit' name='updatef' value='Atualizar'>";
+                echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
+                echo "</form>";
+              }
+              else  //Botão de edição
+              {
+                echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+                echo "<input type='hidden' name='eid' value='" . $row['ID'] . "'>";
+                echo "<input type='hidden' name='edf' value='datafinal'>";
+                echo $row['FIM'] . " ";
+                echo "<input type='submit' name='editf' value='Editar'>";
+                echo "</form>";
+              }
+              echo "</td>";
+              //Botão de exclusão
+              echo "<td style='text-align:center'>";
+              echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
+              echo "<input type='hidden' name='did' value='" . $row['ID'] . "'>";
+              echo "<input type='submit' name='delete' value='Excluir'>";
+              echo "</form>";
+              echo "</td>";
+              echo "</tr>";
+            }
+          ?>
+        </table>
+        <br><br>
+        <b><u>Criação de um campo de submissão de relatórios:</u></b>
+        <form action="" method="POST">
+          <?php
+            echo "Unidade Curricular: <select name='id' required>";
+            echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
+            if($_SESSION['user'] == "ruc")  //Se for RUC
+            {
+              $queryuccreate = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :sigla");
+              $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
+              $queryuccreate->execute();
+            }
+            else $queryuccreate = $conexao->query("SELECT id, SIGLA, ANO FROM UC"); //Se for ADMIN
+            $ucids = array();
+            $ucsiglas = array();
+            $ucanos = array();
+            while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) 
+            {
+              $ucids[] = $row['id'];
+              $ucsiglas[] = $row['SIGLA'];
+              $ucanos[] = $row['ANO'];
+            }
+            for($i = 0; $i < count($ucsiglas); $i++) 
+            {
+              $uc_id = $ucids[$i];
+              $uc_sigla = $ucsiglas[$i];
+              $uc_ano = $ucanos[$i];
+              echo "<option value='$uc_id'>$uc_sigla | $uc_ano</option>";
+            }
+            echo "</select><br>";
+          ?>
+          Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
+            <option value='' selected disabled>Ver todas as épocas disponíveis</option>
+            <option value='Época Normal'>Época Normal</option>
+            <option value='Época de Recurso'>Época de Recurso</option>
+            <option value='Época Especial'>Época Especial</option>
+          </select>
+          <br>
+          Data de início: <input type="date" id="ini" name="inicio" required>
+          <input type="time" step="1" name="di" required>
+          <br>
+          Data de fim: <input type="date" id="fm" name="fim" required>
+          <input type="time" step="1" name="df" required>
+          <br>
+          <input type="submit" name="env" value="Enviar"/>
+        </form>
+        <br><br><br>
+        <b><u>NOTA IMPORTANTE:</u></b>
+        <ul><li>No âmbito da criação de uma submissão, <u>a Unidade Curricular deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC' ou pedir a um ADMINISTRADOR.</li>
+        <?php  
   }
   else header("Location: error.php");
   $conexao = null;  //Fechar conexão com o banco de dados
-    ?>
+        ?>
+      </div>
+    </div>
   </body>
 </html>
