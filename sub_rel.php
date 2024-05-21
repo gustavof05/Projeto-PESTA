@@ -73,7 +73,7 @@
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
           if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
@@ -88,12 +88,10 @@
               $hoje = strtotime($datual); //Converte a data atual para timestamp
               $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
               echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
-        ?>
-    <form action="upload.php" enctype="multipart/form-data" method="POST">
-      <input type="file" name="file"/>
-      <input type="submit" name="enviar" value="Submeter"/>
-    </form>
-    <?php
+              echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                <input type='file' name='file'/>
+                <input type='submit' name='enviar' value='Submeter'/>
+              </form>";
               echo "<br>";
             }
           }
@@ -132,7 +130,7 @@
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id WHERE EDICAO_UC = :id"); //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
           if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
@@ -147,12 +145,10 @@
               $hoje = strtotime($datual); //Converte a data atual para timestamp
               $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
               echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
-        ?>
-    <form action="upload.php" enctype="multipart/form-data" method="POST">
-      <input type="file" name="file"/>
-      <input type="submit" name="enviar" value="Submeter"/>
-    </form>
-    <?php
+              echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                <input type='file' name='file'/>
+                <input type='submit' name='enviar' value='Submeter'/>
+              </form>";
               echo "<br>";
             }
           }
@@ -185,7 +181,7 @@
         {
           echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
           //Verificar se existe uma edição aberta dentro do prazo
-          $query = $conexao->prepare("SELECT * FROM AVALIACOES WHERE EDICAO_UC = :id AND INICIO <= '$datual' AND FIM >= '$datual'");  //Usamos o prepare para executarmos depois (2 vezes)
+          $query = $conexao->prepare("SELECT * FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id WHERE EDICAO_UC = :id AND INICIO <= '$datual' AND FIM >= '$datual'");  //Usamos o prepare para executarmos depois (2 vezes)
           $query->bindValue(':id', $row['id']);
           $query->execute();
           if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) 
@@ -196,12 +192,10 @@
             while($row = $query->fetch(PDO::FETCH_ASSOC))
             {
               echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
-      ?>
-      <form action="upload.php" enctype="multipart/form-data" method="POST">
-      <input type="file" name="file"/>
-      <input type="submit" name="enviar" value="Submeter"/>
-      </form>
-      <?php
+              echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                <input type='file' name='file'/>
+                <input type='submit' name='enviar' value='Submeter'/>
+              </form>";
               echo "<br>";
             }
           }
