@@ -32,7 +32,7 @@
           else
           {
             //Mover o arquivo enviado para o diretório relatorios/ano/uc/file_name
-            $target_file = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . basename($_FILES["file"]["name"]);
+            $target_file = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_SESSION['user_aka'] . "/" . basename($_FILES["file"]["name"]);
             if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) echo "Upload realizado com sucesso";
             else echo "Ocorreu um erro ao tentar fazer o upload do arquivo";
           }
@@ -99,7 +99,7 @@
         </b></span>
         <br><br><br>
         <form action="sub_rel.php" method="POST">
-          <div style="text-align:center"><input type="submit" name="login" value="Voltar atrás"/></div>
+          <div style="text-align:center"><input type="submit" value="Voltar atrás"/></div>
         </form>
         <?php
           $conexao = null;  //Fechar conexão com o banco de dados

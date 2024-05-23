@@ -88,8 +88,7 @@
         <form method="POST" action="" id="formAnoLetivo">
           <select id='AnoLetivo' name='AnoLetivo' onchange='anoletivo()'>
             <?php
-              echo "<option value='$alatual' selected>$alatual/" . $alatual+1 . "</option>";
-              for($ano = $alatual-1; $ano >= $ano_minimo; $ano--)
+              for($ano = $alatual; $ano >= $ano_minimo; $ano--)
               {
                 $selected = ($anoSelecionado == $ano) ? "selected" : "";
                 echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
@@ -104,6 +103,10 @@
         <br>
         <form action="criar_av.php" style="display: inline;" method="POST">
           <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+        </form>
+        <br><br>
+        <form action="insc_alunos.php" style="display: inline;" method="POST">
+          <input type="submit" name="ia" value="Inscrever alunos"/>
         </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>
@@ -158,8 +161,7 @@
         <form method="POST" action="" id="formAnoLetivo">
           <select id='AnoLetivo' name='AnoLetivo' onchange='anoletivo()'>
             <?php
-              echo "<option value='$alatual' selected>$alatual/" . $alatual+1 . "</option>";
-              for($ano = $alatual-1; $ano >= $ano_minimo; $ano--) 
+              for($ano = $alatual; $ano >= $ano_minimo; $ano--) 
               {
                 $selected = ($anoSelecionado == $ano) ? "selected" : "";
                 echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
@@ -170,6 +172,10 @@
         </b></h2><br>
         <form action="criar_av.php" style="display: inline;" method="POST">
           <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+        </form>
+        <br><br>
+        <form action="insc_alunos.php" style="display: inline;" method="POST">
+          <input type="submit" name="ia" value="Inscrever alunos"/>
         </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>
