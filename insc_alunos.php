@@ -68,6 +68,12 @@
     if($_SESSION['user'] == "ruc") $resultado->bindValue(':ruc', $_SESSION['user_aka']);
     if($edicaoSelecionada) $resultado->bindValue(':edicao', $edicaoSelecionada);
     $resultado->execute();
+    //Query de "criação" de alunos
+    $queryuccreate = "SELECT id, SIGLA FROM UC WHERE ANO = :asel";
+    if($_SESSION['user'] == "ruc") $queryuccreate .= " AND RUC = :ruc";
+    $resultadouccreate = $conexao->prepare($queryuccreate);
+    $resultadouccreate->bindValue(':asel', $_SESSION['alsel']);
+    if($_SESSION['user'] == "ruc") $resultadouccreate->bindValue(':ruc', $_SESSION['user_aka']);        
 ?>
 <html lang="pt">
   <head>
@@ -155,11 +161,6 @@
           <?php
             echo "Unidade Curricular: <select name='educ' required>";
             echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
-            $queryuccreate = "SELECT id, SIGLA FROM UC WHERE ANO = :asel";
-            if($_SESSION['user'] == "ruc") $queryuccreate .= " AND RUC = :ruc";
-            $resultadouccreate = $conexao->prepare($queryuccreate);
-            $resultadouccreate->bindValue(':asel', $_SESSION['alsel']);
-            if($_SESSION['user'] == "ruc") $resultadouccreate->bindValue(':ruc', $_SESSION['user_aka']);
             $resultadouccreate->execute();
             $ucids = array();
             $ucsiglas = array();
@@ -181,8 +182,6 @@
           <input type="submit" name="env" value="Inscrever"/>
         </form>
         <br><br><br>
-        <!--b><u>NOTA IMPORTANTE:</u></b>
-        <ul><li>No âmbito da criação de uma submissão, <u>a Unidade Curricular deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC' ou pedir a um ADMINISTRADOR.</li-->
         <?php  
   }
   else header("Location: error.php");

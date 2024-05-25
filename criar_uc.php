@@ -78,7 +78,7 @@
 ?>
 <html lang="pt">
   <head>
-    <title>Cria&ccedil;&atilde;o de submiss&otilde;es</title>
+    <title>Cria&ccedil;&atilde;o de Unidades Curriculares</title>
     <style>
     .container 
     {

@@ -20,11 +20,19 @@
     header('Location: login.php');  //Redirecionar para a página de login
     exit();
   }
+  //Ano letivo/selecionado
   $queryano = $conexao->query("SELECT MIN(ANO) AS amin FROM UC");
   $resultadoano = $queryano->fetch(PDO::FETCH_ASSOC);
   $ano_minimo = $resultadoano['amin'];
   $_SESSION['alat'] = $alatual;
   $_SESSION['alsel'] = isset($_POST['AnoLetivo']) ? $_POST['AnoLetivo'] : $alatual;
+  //Listar UC's
+  $queryuc = "SELECT id, SIGLA, ANO FROM UC WHERE ANO = :ano";
+  if($_SESSION['user'] == "ruc") $queryuc .= " AND UC.RUC = :ruc";
+  $resultadouc = $conexao->prepare($queryuc);
+  if($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") $resultadouc->bindValue(':ano', $_SESSION['alsel']);
+  else $resultadouc->bindValue(':ano', $_SESSION['alat']);
+  if($_SESSION['user'] == "ruc") $resultadouc->bindValue(':ruc', $_SESSION['user_aka']);
 ?>
 <html lang="pt">
   <head>
@@ -114,14 +122,12 @@
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
-            $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :als");  //Usamos o prepare para executarmos depois (2 vezes)
-            $queryuc->bindParam(':als', $_SESSION['alsel']);
-            $queryuc->execute();
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
+            $resultadouc->execute();
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
             echo "</select></h3>";
             echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-            $queryuc->execute();  //"Refazer" a query
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
+            $resultadouc->execute();  //"Refazer" a query
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC))
             {
               echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
               //Verificar se existe uma edição aberta dentro do prazo
@@ -141,9 +147,10 @@
                   $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
-                    <input type='file' name='file'/>
+                    <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
                     <br>
+                    <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -185,15 +192,12 @@
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
-            $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla AND ANO = :als"); //Usamos o prepare para executarmos depois (2 vezes)
-            $queryuc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
-            $queryuc->bindValue(':als', $_SESSION['alsel']);
-            $queryuc->execute();
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
+            $resultadouc->execute();
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
             echo "</select></h3>";
             echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-            $queryuc->execute();  //"Refazer" a query
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
+            $resultadouc->execute();  //"Refazer" a query
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC))
             {
               echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
               //Verificar se existe uma edição aberta dentro do prazo
@@ -213,9 +217,10 @@
                   $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
-                    <input type='file' name='file'/>
+                    <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
                     <br>
+                    <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -239,14 +244,12 @@
           <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
-            $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :alatual");  //Usamos o prepare para executarmos depois (2 vezes)
-            $queryuc->bindParam(':alatual', $alatual);
-            $queryuc->execute();
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
+            $resultadouc->execute();
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . "</option>";
             echo "</select></h3>";
             echo "<div id='todos' style='display:block; text-align:center;'><h3><b>Escolha, em cima, uma Unidade Curricular para ver os campos de submissão disponíveis.</b></div>";
-            $queryuc->execute();  //"Refazer" a query
-            while($row = $queryuc->fetch(PDO::FETCH_ASSOC))
+            $resultadouc->execute();  //"Refazer" a query
+            while($row = $resultadouc->fetch(PDO::FETCH_ASSOC))
             {
               echo "<div id='" . $row['id'] . "' class='campos-submissao' style='display:none;'><h3><b>Campos de submissão para " . $row['SIGLA'] . ":</b></h3>";
               //Verificar se existe uma edição aberta dentro do prazo
@@ -262,6 +265,7 @@
                 {
                   echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                    <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
                     <br>
                     <input type='file' name='file'/>

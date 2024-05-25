@@ -32,7 +32,17 @@
           else
           {
             //Mover o arquivo enviado para o diretório relatorios/ano/uc/file_name
-            $target_file = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_SESSION['user_aka'] . "/" . basename($_FILES["file"]["name"]);
+            $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_POST['EPOCA'] . "/" . $_SESSION['user_aka'];
+            $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
+            // Verificar e criar o diretório, se necessário
+            if(!file_exists($target_dir))
+            {
+              if(!mkdir($target_dir, 0777, true))
+              {
+                echo "Falha ao criar diretórios...";
+                return;
+              }
+            }
             if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) echo "Upload realizado com sucesso";
             else echo "Ocorreu um erro ao tentar fazer o upload do arquivo";
           }
@@ -43,19 +53,15 @@
     }
     else echo "Nenhum arquivo foi enviado";
   }
-  if($_SESSION['user'] == "admin") $query = $conexao->prepare("SELECT * FROM UC JOIN AVALIACOES ON UC.id = AVALIACOES.EDICAO_UC WHERE UC.SIGLA = :sigla");  //ADMIN
-  else if($_SESSION['user'] == "ruc") //RUC
-  {
-    $query = $conexao->prepare("SELECT * FROM UC JOIN AVALIACOES ON UC.id = AVALIACOES.EDICAO_UC WHERE UC.SIGLA = :sigla AND UC.RUC = :ruc");
-    $query->bindValue(':ruc', $_SESSION['user_aka']);
-  }
-  else  //Aluno
-  {
-    $query = $conexao->prepare("SELECT * FROM UC JOIN AVALIACOES ON UC.id = AVALIACOES.EDICAO_UC WHERE UC.ANO = :ano AND UC.SIGLA = :sigla AND AVALIACOES.INICIO <= '$datual' AND AVALIACOES.FIM >= '$datual'");
-    $query->bindValue(':ano', $_GET['ano']);
-  }
-  $query->bindValue(':sigla', $_GET['uc']);
-  $query->execute();
+  //Query de verificação da submissão
+  $query = "SELECT * FROM UC JOIN AVALIACOES ON UC.id = AVALIACOES.EDICAO_UC WHERE UC.SIGLA = :sigla";
+  if($_SESSION['user'] == "ruc") $query .= " AND UC.RUC = :ruc";
+  else if($_SESSION['user'] != "admin" && $_SESSION['user'] != "ruc") $query .= " AND UC.ANO = :ano AND AVALIACOES.INICIO <= '$datual' AND AVALIACOES.FIM >= '$datual'";
+  $resultado = $conexao->prepare($query);
+  $resultado->bindValue(':sigla', $_GET['uc']);
+  if($_SESSION['user'] == "ruc") $resultado->bindValue(':ruc', $_SESSION['user_aka']);
+  else if($_SESSION['user'] != "admin" && $_SESSION['user'] != "ruc") $resultado->bindValue(':ano', $_GET['ano']);
+  $resultado->execute();
 ?>
 <html lang="pt">
   <head>
@@ -93,9 +99,11 @@
         <br><br>
         <span style='display:block; text-align:center;'><h3><b>
         <?php
-          echo $_POST['titulo'];
-          exit(0);        
-          if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) fazerUpload();
+          if(count($resultado->fetchAll(PDO::FETCH_ASSOC)) > 0) 
+          {
+            echo "Título: " . $_POST['titulo'] . "<br><br><br>"; 
+            fazerUpload();
+          }
           else echo "Não é permitido submeter nesta edição de UC";
         ?>
         </b></span>
