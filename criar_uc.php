@@ -117,7 +117,6 @@
         <b><u>Tabela Atual:</u></b>
         <table border="1">
           <tr>
-            <th>ID</th>
             <th>SIGLA DA UC</th>
             <th>ANO</th>
             <th>RUC</th>
@@ -127,7 +126,6 @@
             while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
             {
               echo "<tr>";
-              echo "<td style='text-align:center'>" . $row['id'] . "</td>";
               echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
               //Edição
               echo "<td style='text-align:center'>";
@@ -169,7 +167,7 @@
           <br>
           Responsável da Unidade Curricular: <input type="text" name="ruc" value="" autocomplete="off" placeholder="RUC" required>
           <br>
-          <input type="submit" name="env" value="Enviar"/>
+          <input type="submit" name="env" value="Criar"/>
         </form>
         <br><br>
         <b><u>NOTA IMPORTANTE:</u></b>

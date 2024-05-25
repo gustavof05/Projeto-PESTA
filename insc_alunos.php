@@ -10,13 +10,6 @@
   }
   date_default_timezone_set("Europe/Lisbon");
   $datual = date('Y-m-d H:i:s');  //Data de hoje
-  //Ano letivo (próximas 2 linhas)
-  $alatual = date('Y');
-  if(($datual > date('Y-01-01')) && ($datual < date('Y-09-20'))) $alatual = date('Y', strtotime('-1 year'));
-  $queryano = $conexao->query("SELECT MIN(ANO) AS amin FROM UC");
-  $resultadoano = $queryano->fetch(PDO::FETCH_ASSOC);
-  $ano_minimo = $resultadoano['amin'];
-  $anoSelecionado = isset($_POST['AnoLetivo']) ? $_POST['AnoLetivo'] : $alatual;
   session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
   session_start();  //Inicio de sessão
   if(!isset($_SESSION['user']))  //Se o usuário não estiver logado
@@ -53,13 +46,28 @@
         exit();
       }
     }
-    if($_SESSION['user'] == "ruc")  //"Tabela do RUC"
+    //Edição UC
+    $edicaoSelecionada = isset($_POST['EdicaoUC']) ? $_POST['EdicaoUC'] : '';
+    $edicoesUC = array();
+    if($_SESSION['alsel']) 
     {
-      $resultado = $conexao->prepare("SELECT * FROM INSCREVER_ALUNOS JOIN UC ON INSCREVER_ALUNOS.ED_UC = UC.id WHERE UC.RUC = :ruc");
-      $resultado->bindValue(':ruc', $_SESSION['user_aka']);
-      $resultado->execute();
+      $stmt = ("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :ano");
+      if($_SESSION['user'] == "ruc") $stmt .= " AND RUC = :ruc";
+      $resultadouc = $conexao->prepare($stmt);
+      $resultadouc->bindValue(':ano', $_SESSION['alsel']);
+      if($_SESSION['user'] == "ruc") $resultadouc->bindValue(':ruc', $_SESSION['user_aka']);
+      $resultadouc->execute();
+      $edicoesUC = $resultadouc->fetchAll(PDO::FETCH_ASSOC);
     }
-    else $resultado = $conexao->query("SELECT * FROM INSCREVER_ALUNOS JOIN UC ON INSCREVER_ALUNOS.ED_UC = UC.id"); //"Tabela do ADMIN"
+    //Selecionar os dados para a tabela de acordo com o ano letivo e a edição UC selecionados
+    $query = "SELECT * FROM INSCREVER_ALUNOS JOIN UC ON INSCREVER_ALUNOS.ED_UC = UC.id WHERE UC.ANO = :ano";
+    if($_SESSION['user'] == "ruc") $query .= " AND UC.RUC = :ruc";
+    if($edicaoSelecionada) $query .= " AND INSCREVER_ALUNOS.ED_UC = :edicao";
+    $resultado = $conexao->prepare($query);
+    $resultado->bindValue(':ano', $_SESSION['alsel']);
+    if($_SESSION['user'] == "ruc") $resultado->bindValue(':ruc', $_SESSION['user_aka']);
+    if($edicaoSelecionada) $resultado->bindValue(':edicao', $edicaoSelecionada);
+    $resultado->execute();
 ?>
 <html lang="pt">
   <head>
@@ -88,9 +96,9 @@
       }
     </style>
     <script>
-        function anoletivo() 
+        function edicaoUC()
         {
-          document.getElementById('formAnoLetivo').submit();  //Enviar o formulário ao alterar o ano letivo
+          document.getElementById('formEdicaoUC').submit();  // Enviar o formulário ao alterar a edição UC
         }
     </script>
   </head>
@@ -105,21 +113,21 @@
           <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
         </form>
         <br>
-        <form method="POST" action="" id="formAnoLetivo">
-          <select id='AnoLetivo' name='AnoLetivo' onchange='anoletivo()'>
-            <?php
-              for($ano = $alatual; $ano >= $ano_minimo; $ano--)
-              {
-                $selected = ($anoSelecionado == $ano) ? "selected" : "";
-                echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
-              }
-            ?>
-          </select>
-        <br>
+        <form method="POST" action="" id="formEdicaoUC">
+          <select id='EdicaoUC' name='EdicaoUC' onchange='edicaoUC()'>
+            <option value='' selected disabled>Selecione a edição UC</option>
+              <?php
+                foreach ($edicoesUC as $edicao) 
+                {
+                  $selected = ($edicaoSelecionada == $edicao['id']) ? "selected" : "";
+                  echo "<option value='" . $edicao['id'] . "' $selected>" . $edicao['SIGLA'] . "</option>";
+                }
+              ?>
+           </select>
+        </form>
         <b><u>Tabela Atual:</u></b>
         <table border="1">
           <tr>
-            <th>ID</th>
             <th>EDIÇÃO UC</th>
             <th>Nº ALUNO</th>
             <th style='color: red'>ELIMINAR LINHA</th>
@@ -128,8 +136,7 @@
             while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
             {
               echo "<tr>";
-              echo "<td style='text-align:center'>" . $row['Id'] . "</td>";
-              echo "<td style='text-align:center'>" . $row['SIGLA'] . " | " . $row['ANO'] . "</td>";
+              echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
               echo "<td style='text-align:center'>" . $row['N_ALUNO'] . "</td>";
               //Botão de exclusão
               echo "<td style='text-align:center'>";
@@ -148,34 +155,30 @@
           <?php
             echo "Unidade Curricular: <select name='educ' required>";
             echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
-            if($_SESSION['user'] == "ruc")  //Se for RUC
-            {
-              $queryuccreate = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :sigla");
-              $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
-              $queryuccreate->execute();
-            }
-            else $queryuccreate = $conexao->query("SELECT id, SIGLA, ANO FROM UC"); //Se for ADMIN
+            $queryuccreate = "SELECT id, SIGLA FROM UC WHERE ANO = :asel";
+            if($_SESSION['user'] == "ruc") $queryuccreate .= " AND RUC = :ruc";
+            $resultadouccreate = $conexao->prepare($queryuccreate);
+            $resultadouccreate->bindValue(':asel', $_SESSION['alsel']);
+            if($_SESSION['user'] == "ruc") $resultadouccreate->bindValue(':ruc', $_SESSION['user_aka']);
+            $resultadouccreate->execute();
             $ucids = array();
             $ucsiglas = array();
-            $ucanos = array();
-            while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) 
+            while($row = $resultadouccreate->fetch(PDO::FETCH_ASSOC)) 
             {
               $ucids[] = $row['id'];
               $ucsiglas[] = $row['SIGLA'];
-              $ucanos[] = $row['ANO'];
             }
             for($i = 0; $i < count($ucsiglas); $i++) 
             {
               $uc_id = $ucids[$i];
               $uc_sigla = $ucsiglas[$i];
-              $uc_ano = $ucanos[$i];
-              echo "<option value='$uc_id'>$uc_sigla | $uc_ano</option>";
+              echo "<option value='$uc_id'>$uc_sigla</option>";
             }
             echo "</select><br>";
           ?>
           Número do Aluno: <input type="text" name="nal" value="" autocomplete="off" placeholder="Exemplo: 1230001" required>
           <br>
-          <input type="submit" name="env" value="Enviar"/>
+          <input type="submit" name="env" value="Inscrever"/>
         </form>
         <br><br><br>
         <!--b><u>NOTA IMPORTANTE:</u></b>

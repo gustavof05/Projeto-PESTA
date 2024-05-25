@@ -93,6 +93,8 @@
         <br><br>
         <span style='display:block; text-align:center;'><h3><b>
         <?php
+          echo $_POST['titulo'];
+          exit(0);        
           if(count($query->fetchAll(PDO::FETCH_ASSOC)) > 0) fazerUpload();
           else echo "Não é permitido submeter nesta edição de UC";
         ?>

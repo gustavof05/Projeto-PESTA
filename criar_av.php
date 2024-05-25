@@ -103,13 +103,13 @@
         exit();
       }
     }
-    if($_SESSION['user'] == "ruc")  //"Tabela do RUC"
-    {
-      $resultado = $conexao->prepare("SELECT AVALIACOES.ID, AVALIACOES.EDICAO_UC, UC.SIGLA, UC.ANO, AVALIACOES.EPOCA, AVALIACOES.INICIO, AVALIACOES.FIM FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id WHERE UC.RUC = :ruc");
-      $resultado->bindValue(':ruc', $_SESSION['user_aka']);
-      $resultado->execute();
-    }
-    else $resultado = $conexao->query("SELECT AVALIACOES.ID, AVALIACOES.EDICAO_UC, UC.SIGLA, UC.ANO, AVALIACOES.EPOCA, AVALIACOES.INICIO, AVALIACOES.FIM FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id"); //"Tabela do ADMIN"
+    //Tabela
+    $query = "SELECT AVALIACOES.ID, AVALIACOES.EDICAO_UC, UC.SIGLA, UC.ANO, AVALIACOES.EPOCA, AVALIACOES.INICIO, AVALIACOES.FIM FROM AVALIACOES JOIN UC ON AVALIACOES.EDICAO_UC = UC.id WHERE UC.ANO = :ano";
+    if($_SESSION['user'] == "ruc") $query .= " AND UC.RUC = :ruc";
+    $resultado = $conexao->prepare($query);
+    $resultado->bindValue(':ano', $_SESSION['alsel']);
+    if($_SESSION['user'] == "ruc") $resultado->bindValue(':ruc', $_SESSION['user_aka']);
+    $resultado->execute();
 ?>
 <html lang="pt">
   <head>
@@ -148,11 +148,13 @@
         <form action="sub_rel.php" method="POST">
           <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
         </form>
+        <?php
+          echo "<b><u>Ano Selecionado = " . $_SESSION['alsel'] . "</u></b> (Mudar na página anterior)";
+        ?>  
         <br><br>
         <b><u>Tabela Atual:</u></b>
         <table border="1">
           <tr>
-            <th>ID</th>
             <th>EDIÇÃO UC</th>
             <th>ÉPOCA</th>
             <th>INICIO</th>
@@ -163,8 +165,7 @@
             while($row = $resultado->fetch(PDO::FETCH_ASSOC)) //Mostrar cada linha da tabela
             {
               echo "<tr>";
-              echo "<td style='text-align:center'>" . $row['ID'] . "</td>";
-              echo "<td style='text-align:center'>" . $row['SIGLA'] . " | " . $row['ANO'] . "</td>";
+              echo "<td style='text-align:center'>" . $row['SIGLA'] . "</td>";
               echo "<td style='text-align:center'>" . $row['EPOCA'] . "</td>";
               echo "<td style='text-align:center'>";
               //Edição - Data Inicial
@@ -172,7 +173,7 @@
               {
                 echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
                 echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-                echo "Nova Data de Início: <input type='date' name='new_inicio' required>";
+                echo "Nova Data Inicial: <input type='date' name='new_inicio' required>";
                 echo "<input type='time' step='1' name='new_di' required><br>";
                 echo "<input type='submit' name='updatei' value='Atualizar'>";
                 echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
@@ -194,7 +195,7 @@
               {
                 echo "<form action='" . htmlspecialchars($_SERVER["PHP_SELF"]) . "' method='POST'>";
                 echo "<input type='hidden' name='id' value='" . $row['ID'] . "'>";
-                echo "Nova Data de Início: <input type='date' name='new_fim' required>";
+                echo "Nova Data Final: <input type='date' name='new_fim' required>";
                 echo "<input type='time' step='1' name='new_df' required><br>";
                 echo "<input type='submit' name='updatef' value='Atualizar'>";
                 echo "<input type='button' value='Cancelar' onclick='window.location.href=\"" . $_SERVER["PHP_SELF"] . "\"'>";
@@ -226,29 +227,25 @@
         <form action="" method="POST">
           <?php
             echo "Unidade Curricular: <select name='id' required>";
-            echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
-            if($_SESSION['user'] == "ruc")  //Se for RUC
-            {
-              $queryuccreate = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :sigla");
-              $queryuccreate->bindValue(':sigla', $_SESSION['user_aka']);
-              $queryuccreate->execute();
-            }
-            else $queryuccreate = $conexao->query("SELECT id, SIGLA, ANO FROM UC"); //Se for ADMIN
+            echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";    
+            $queryuccreate = "SELECT id, SIGLA FROM UC WHERE ANO = :ano"; //Se for ADMIN
+            if($_SESSION['user'] == "ruc") $queryuccreate .= " AND RUC = :ruc";
+            $resultadouccreate = $conexao->prepare($queryuccreate);
+            $resultadouccreate->bindValue(':ano', $_SESSION['alsel']); 
+            if($_SESSION['user'] == "ruc") $resultadouccreate->bindValue(':ruc', $_SESSION['user_aka']);
+            $resultadouccreate->execute();
             $ucids = array();
             $ucsiglas = array();
-            $ucanos = array();
-            while($row = $queryuccreate->fetch(PDO::FETCH_ASSOC)) 
+            while($row = $resultadouccreate->fetch(PDO::FETCH_ASSOC)) 
             {
               $ucids[] = $row['id'];
               $ucsiglas[] = $row['SIGLA'];
-              $ucanos[] = $row['ANO'];
             }
             for($i = 0; $i < count($ucsiglas); $i++) 
             {
               $uc_id = $ucids[$i];
               $uc_sigla = $ucsiglas[$i];
-              $uc_ano = $ucanos[$i];
-              echo "<option value='$uc_id'>$uc_sigla | $uc_ano</option>";
+              echo "<option value='$uc_id'>$uc_sigla</option>";
             }
             echo "</select><br>";
           ?>
@@ -265,7 +262,7 @@
           Data de fim: <input type="date" id="fm" name="fim" required>
           <input type="time" step="1" name="df" required>
           <br>
-          <input type="submit" name="env" value="Enviar"/>
+          <input type="submit" name="env" value="Criar"/>
         </form>
         <br><br><br>
         <b><u>NOTA IMPORTANTE:</u></b>

@@ -23,7 +23,8 @@
   $queryano = $conexao->query("SELECT MIN(ANO) AS amin FROM UC");
   $resultadoano = $queryano->fetch(PDO::FETCH_ASSOC);
   $ano_minimo = $resultadoano['amin'];
-  $anoSelecionado = isset($_POST['AnoLetivo']) ? $_POST['AnoLetivo'] : $alatual;
+  $_SESSION['alat'] = $alatual;
+  $_SESSION['alsel'] = isset($_POST['AnoLetivo']) ? $_POST['AnoLetivo'] : $alatual;
 ?>
 <html lang="pt">
   <head>
@@ -88,9 +89,9 @@
         <form method="POST" action="" id="formAnoLetivo">
           <select id='AnoLetivo' name='AnoLetivo' onchange='anoletivo()'>
             <?php
-              for($ano = $alatual; $ano >= $ano_minimo; $ano--)
+              for($ano = $_SESSION['alat']; $ano >= $ano_minimo; $ano--)
               {
-                $selected = ($anoSelecionado == $ano) ? "selected" : "";
+                $selected = ($_SESSION['alsel'] == $ano) ? "selected" : "";
                 echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
               }
             ?>
@@ -114,7 +115,7 @@
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
             $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE ANO = :als");  //Usamos o prepare para executarmos depois (2 vezes)
-            $queryuc->bindParam(':als', $anoSelecionado);
+            $queryuc->bindParam(':als', $_SESSION['alsel']);
             $queryuc->execute();
             while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
             echo "</select></h3>";
@@ -141,6 +142,8 @@
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
                     <input type='file' name='file'/>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <br>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -161,9 +164,9 @@
         <form method="POST" action="" id="formAnoLetivo">
           <select id='AnoLetivo' name='AnoLetivo' onchange='anoletivo()'>
             <?php
-              for($ano = $alatual; $ano >= $ano_minimo; $ano--) 
+              for($ano = $_SESSION['alat']; $ano >= $ano_minimo; $ano--) 
               {
-                $selected = ($anoSelecionado == $ano) ? "selected" : "";
+                $selected = ($_SESSION['alsel'] == $ano) ? "selected" : "";
                 echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
               }
             ?>
@@ -184,7 +187,7 @@
           <?php
             $queryuc = $conexao->prepare("SELECT id, SIGLA, ANO FROM UC WHERE RUC = :ruc_sigla AND ANO = :als"); //Usamos o prepare para executarmos depois (2 vezes)
             $queryuc->bindValue(':ruc_sigla', $_SESSION['user_aka']);
-            $queryuc->bindParam(':als', $anoSelecionado);
+            $queryuc->bindValue(':als', $_SESSION['alsel']);
             $queryuc->execute();
             while($row = $queryuc->fetch(PDO::FETCH_ASSOC)) echo "<option value='" . $row['id'] . "'>" . $row['SIGLA'] . " " . $row['ANO'] . "</option>";
             echo "</select></h3>";
@@ -211,6 +214,8 @@
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
                     <input type='file' name='file'/>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <br>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -257,6 +262,8 @@
                 {
                   echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <br>
                     <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
