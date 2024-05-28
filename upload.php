@@ -17,8 +17,11 @@
     header('Location: login.php');
     exit();
   }
+  if($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") $aluno = $_POST['aluno'];
+  else $aluno = $_SESSION['user_aka'];
   function fazerUpload()  //Função de upload
   {
+    global $conexao, $aluno;
     if(isset($_FILES["file"]))  //Verificar se um arquivo foi enviado
     {
       if($_FILES["file"]["error"] == UPLOAD_ERR_OK) //Verificar se não há erros durante o envio
@@ -32,7 +35,7 @@
           else
           {
             //Mover o arquivo enviado para o diretório relatorios/ano/uc/file_name
-            $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_POST['EPOCA'] . "/" . $_SESSION['user_aka'];
+            $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_POST['EPOCA'] . "/" . $aluno;
             $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
             // Verificar e criar o diretório, se necessário
             if(!file_exists($target_dir))
@@ -43,7 +46,15 @@
                 return;
               }
             }
-            if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file)) echo "Upload realizado com sucesso";
+            if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file))
+            {
+              echo "Upload realizado com sucesso";
+              $queryup = $conexao->prepare("INSERT INTO RELATORIOS_SUBMETIDOS (EDICAO_AVALIACOES, TITULO, ALUNO) VALUES (:edav, :tit, :aluno)");
+              $queryup->bindValue(':edav', $_POST['EDAV']);
+              $queryup->bindValue(':tit', $_POST['titulo']);
+              $queryup->bindValue(':aluno', $aluno);
+              $queryup->execute();
+            }
             else echo "Ocorreu um erro ao tentar fazer o upload do arquivo";
           }
         }

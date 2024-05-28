@@ -1,69 +1,73 @@
 <?php
-  try
-  {
+try {
     $conexao = new PDO('sqlite:bd_pesta.db');
     $conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  }
-  catch(PDOException $e)
-  {
-    die("Erro ao conectar a base de dados: " . $e->getMessage()); //Houve erros na conexão
-  }
-  date_default_timezone_set("Europe/Lisbon");
-  session_set_cookie_params(['httponly' => true]);  //Proteção contra roubos de sessão
-  session_start();  //Inicio de sessão
-  if(!isset($_SESSION['user']))
-  {  //Se o usuário não estiver logado
-    header('Location: login.php');  //Redirecionar para a página de login
+} catch (PDOException $e) {
+    die("Erro ao conectar a base de dados: " . $e->getMessage());
+}
+
+date_default_timezone_set("Europe/Lisbon");
+session_set_cookie_params(['httponly' => true]);
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
     exit();
-  }
-  if($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc")  //Esta página só funciona para ADMIN'S e RUC'S
-  {
-    if(isset($_POST["visualizado"]) && isset($_POST["id_relatorio"])) //Verificar se os dados foram recebidos
-    {
-      foreach($_POST["id_relatorio"] as $index => $id_relatorio)  //Loop sobre os relatórios enviados pelo formulário
-      {  
-        $visualizado = isset($_POST["visualizado"][$index]) ? 1 : 0;  //Verificar se o relatório foi marcado como visualizado      
-        //Atualizar o status de visualização na base de dados
-        $query = $conexao->prepare("UPDATE RELATORIOS_SUBMETIDOS SET VISUALIZADO = :visualizado WHERE EDICAO_AVALIACOES = :id_relatorio");
-        $query->bindValue(':visualizado', $visualizado, PDO::PARAM_INT);
-        $query->bindValue(':id_relatorio', $id_relatorio, PDO::PARAM_INT);
-        $query->execute();
-      }
-      header('Location: ' . $_SERVER['PHP_SELF']); //Redirecionar para esta página após a inserção dos dados
-      exit();
+}
+
+if ($_SESSION['user'] == "admin" || $_SESSION['user'] == "ruc") {
+    if (isset($_POST["visualizado"]) && isset($_POST["id_relatorio"]) && isset($_POST["titulo"])) {
+        foreach ($_POST["id_relatorio"] as $index => $id_relatorio) {
+            $visualizado = isset($_POST["visualizado"][$index]) ? 1 : 0;
+            $titulo = $_POST["titulo"][$index];
+
+            $query = $conexao->prepare("UPDATE RELATORIOS_SUBMETIDOS SET VISUALIZADO = :visualizado, TITULO = :titulo WHERE EDICAO_AVALIACOES = :id_relatorio");
+            $query->bindValue(':visualizado', $visualizado, PDO::PARAM_INT);
+            $query->bindValue(':titulo', $titulo, PDO::PARAM_STR);
+            $query->bindValue(':id_relatorio', $id_relatorio, PDO::PARAM_INT);
+            $query->execute();
+        }
+        header("Location: exp_rel.php");
+        exit();
     }
-    //Relatórios
+
     $relatorios = $conexao->query("SELECT * FROM RELATORIOS_SUBMETIDOS");
 ?>
+<!DOCTYPE html>
 <html lang="pt">
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>Visibilidade de relatórios</title>
     <style>
-      .container 
-      {
+      .container {
         max-width: 1024px;
         margin: 0 auto;
         text-align: center;
       }
-      body 
-      {
+      body {
         text-align: center;
       }
-      .content 
-      {
+      .content {
         text-align: left;
         margin: 0 auto;
         max-width: 1024px;
       }
-      .banner img 
-      {
+      .banner img {
         width: 100%;
         height: auto;
       }
+      .edit-button {
+        margin-left: 10px;
+        cursor: pointer;
+      }
     </style>
-  </head>
-  <body>
+    <script>
+      function enableEdit(id) {
+        document.getElementById('titulo_' + id).removeAttribute('readonly');
+      }
+    </script>
+</head>
+<body>
     <div class="container">
       <div class="banner">
         <img src="https://www.dee.isep.ipp.pt/uploads/ISEP_DEP/BANNER-2022.png" alt="Banner ISEP">
@@ -87,7 +91,8 @@
                 <input type='text' name='titulo[" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' id='titulo_" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "' value='" . htmlspecialchars($row['TITULO']) . "' readonly>
                 <button type='button' class='edit-button' onclick='enableEdit(" . htmlspecialchars($row['EDICAO_AVALIACOES']) . ")'>Editar</button>
                 <label>Aluno: " . htmlspecialchars($row['ALUNO']) . "</label>
-                <input type='checkbox' name='visualizado[" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' id='visualizado_" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' $visualizado> ($visibilidade)
+                <input type='checkbox' name='visualizado[" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' id='visualizado_" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' $visualizado>
+                <span>Visibilidade: $visibilidade</span>
                 <input type='hidden' name='id_relatorio[" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "]' value='" . htmlspecialchars($row['EDICAO_AVALIACOES']) . "'>
               </div>";
             }
@@ -99,10 +104,12 @@
         </form>
       </div>
     </div>
-  </body>
+</body>
 </html>
 <?php
-  } 
-  else header("Location: error.php");
-  $conexao = null;  // Fechar conexão com a BD
+} else {
+    header("Location: error.php");
+}
+
+$conexao = null;
 ?>

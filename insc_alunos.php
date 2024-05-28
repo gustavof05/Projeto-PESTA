@@ -118,7 +118,10 @@
         <form action="sub_rel.php" method="POST">
           <div style="text-align:left"><input type="submit" name="login" value="Voltar atrás"/></div>
         </form>
-        <br>
+        <?php
+          echo "<b><u>Ano Selecionado = " . $_SESSION['alsel'] . "</u></b> (Mudar na página anterior)";
+        ?>  
+        <br><br>
         <form method="POST" action="" id="formEdicaoUC">
           <select id='EdicaoUC' name='EdicaoUC' onchange='edicaoUC()'>
             <option value='' selected disabled>Selecione a edição UC</option>

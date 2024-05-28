@@ -117,6 +117,10 @@
         <form action="insc_alunos.php" style="display: inline;" method="POST">
           <input type="submit" name="ia" value="Inscrever alunos"/>
         </form>
+        <br><br>
+        <form action="visibilidade_rel.php" style="display: inline;" method="POST">
+          <input type="submit" name="vr" value="Exposição de relatórios"/>
+        </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
@@ -148,7 +152,10 @@
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
                     <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
-                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <input type='hidden' name='EDAV' value='" . $row['ID'] . "'/>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
+                    <br>
+                    <b><u>Número do aluno:</u></b> <input type='text' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
                     <br>
                     <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
@@ -187,6 +194,10 @@
         <form action="insc_alunos.php" style="display: inline;" method="POST">
           <input type="submit" name="ia" value="Inscrever alunos"/>
         </form>
+        <br><br>
+        <form action="visibilidade_rel.php" style="display: inline;" method="POST">
+          <input type="submit" name="vr" value="Exposição de relatórios"/>
+        </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
@@ -218,7 +229,10 @@
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
                     <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
-                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <input type='hidden' name='EDAV' value='" . $row['ID'] . "'/>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
+                    <br>
+                    <b><u>Número do aluno:</u></b> <input type='text' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
                     <br>
                     <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
@@ -266,7 +280,8 @@
                   echo "<b>Época:</b> <span style='color: blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
                   echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
                     <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
-                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo' required/>
+                    <input type='hidden' name='EDAV' value='" . $row['ID'] . "'/>
+                    <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
                     <br>
                     <input type='file' name='file'/>
                     <input type='submit' name='enviar' value='Submeter'/>
