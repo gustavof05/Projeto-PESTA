@@ -29,7 +29,8 @@
         $stmt->bindValue(':educ', $_POST['educ']);
         $stmt->bindValue(':nal', $_POST['nal']);
         $stmt->execute(); //Executar a submissão dos dados na BD
-        header('Location: ' . $_SERVER['PHP_SELF']); //Redireciona para a mesma página após a inserção dos dados
+        $edicaoSelecionada = $_POST['EdicaoUC']; //Pegar o valor da edição selecionada
+        header('Location: ' . $_SERVER['PHP_SELF'] . '?EdicaoUC=' . $edicaoSelecionada); //Redirecionar para esta página após a inserção dos dados
         exit();
       }
     }
@@ -47,7 +48,7 @@
       }
     }
     //Edição UC
-    $edicaoSelecionada = isset($_POST['EdicaoUC']) ? $_POST['EdicaoUC'] : '';
+    $edicaoSelecionada = isset($_POST['EdicaoUC']) ? $_POST['EdicaoUC'] : (isset($_GET['EdicaoUC']) ? $_GET['EdicaoUC'] : '');  //Para manter na mesma página após submeter o formulário
     $edicoesUC = array();
     if($_SESSION['alsel']) 
     {
@@ -69,11 +70,11 @@
     if($edicaoSelecionada) $resultado->bindValue(':edicao', $edicaoSelecionada);
     $resultado->execute();
     //Query de "criação" de alunos
-    $queryuccreate = "SELECT id, SIGLA FROM UC WHERE ANO = :asel";
-    if($_SESSION['user'] == "ruc") $queryuccreate .= " AND RUC = :ruc";
-    $resultadouccreate = $conexao->prepare($queryuccreate);
-    $resultadouccreate->bindValue(':asel', $_SESSION['alsel']);
-    if($_SESSION['user'] == "ruc") $resultadouccreate->bindValue(':ruc', $_SESSION['user_aka']);        
+    $queryacreate = "SELECT id, SIGLA FROM UC WHERE ANO = :asel";
+    if($_SESSION['user'] == "ruc") $queryacreate .= " AND RUC = :ruc";
+    $resultadoacreate = $conexao->prepare($queryacreate);
+    $resultadoacreate->bindValue(':asel', $_SESSION['alsel']);
+    if($_SESSION['user'] == "ruc") $resultadoacreate->bindValue(':ruc', $_SESSION['user_aka']);        
 ?>
 <html lang="pt">
   <head>
@@ -161,13 +162,14 @@
         <br><br>
         <b><u>Criação de um campo de submissão de relatórios:</u></b>
         <form action="" method="POST">
+          <input type="hidden" name="EdicaoUC" value="<?php echo $edicaoSelecionada; ?>">
           <?php
             echo "Unidade Curricular: <select name='educ' required>";
             echo "<option value='' selected disabled>Ver as UC's disponíveis</option>";
-            $resultadouccreate->execute();
+            $resultadoacreate->execute();
             $ucids = array();
             $ucsiglas = array();
-            while($row = $resultadouccreate->fetch(PDO::FETCH_ASSOC)) 
+            while($row = $resultadoacreate->fetch(PDO::FETCH_ASSOC)) 
             {
               $ucids[] = $row['id'];
               $ucsiglas[] = $row['SIGLA'];
