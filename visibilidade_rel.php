@@ -139,7 +139,6 @@
         <input type="hidden" name="EdicaoUC" value="<?php echo $edicaoSelecionada; ?>">
           <table border="1">
             <tr>
-            <th>ID</th>
               <th>TÍTULO</th>
               <th>ALUNO</th>
               <th>VISIBILIDADE</th>
@@ -151,7 +150,6 @@
                 $visibilidade = $row['VISUALIZADO'] ? 'Público' : 'Privado';
                 $id = $row['iD'];
                 echo "<tr>";
-                echo "<td style='text-align:center'>". $row['iD'] . "</td>";
                 echo "<td style='text-align:center'>";
                 echo "<span id='titulo_display_" . $row['iD'] . "'>" . $row['TITULO'] . "</span>";
                 echo "<input type='text' name='titulo[" . $row['iD'] . "]' id='titulo_edit_" . $row['iD'] . "' value='" . $row['TITULO'] . "' style='display:none;'>";
