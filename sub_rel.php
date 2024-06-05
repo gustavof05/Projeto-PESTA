@@ -109,17 +109,16 @@
         <form action="criar_uc.php" method="POST">
           <input type="submit" name="cuc" value="Criar/Excluir edição UC"/>
         </form>
-        <br>
         <form action="criar_av.php" style="display: inline;" method="POST">
-          <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+          <input type="submit" name="ca" value="Definições de épocas de submissão"/>
         </form>
         <br><br>
-        <form action="insc_alunos.php" style="display: inline;" method="POST">
-          <input type="submit" name="ia" value="Inscrever alunos"/>
+        <!--form action="insc_alunos.php" style="display: inline;" method="POST">
+          <input type="submit" name="ia" value="Inscrever alunos (não implementado)"/>
         </form>
-        <br><br>
+        <br><br-->
         <form action="visibilidade_rel.php" style="display: inline;" method="POST">
-          <input type="submit" name="vr" value="Exposição de relatórios"/>
+          <input type="submit" name="vr" value="Seleção de relatórios em exposição"/>
         </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>
@@ -188,15 +187,15 @@
         </form>
         </b></h2><br>
         <form action="criar_av.php" style="display: inline;" method="POST">
-          <input type="submit" name="ca" value="Criar/Editar/Excluir campo de submissão"/>
+          <input type="submit" name="ca" value="Definições de épocas de submissão"/>
         </form>
         <br><br>
-        <form action="insc_alunos.php" style="display: inline;" method="POST">
-          <input type="submit" name="ia" value="Inscrever alunos"/>
+        <!--form action="insc_alunos.php" style="display: inline;" method="POST">
+          <input type="submit" name="ia" value="Inscrever alunos (não implementado)"/>
         </form>
-        <br><br>
+        <br><br-->
         <form action="visibilidade_rel.php" style="display: inline;" method="POST">
-          <input type="submit" name="vr" value="Exposição de relatórios"/>
+          <input type="submit" name="vr" value="Seleção de relatórios em exposição"/>
         </form>
         <!--Selecionar UC-->
         <br><br><b><h3>Listar Unidades Curriculares:</b>

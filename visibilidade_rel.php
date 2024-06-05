@@ -140,26 +140,28 @@
           <table border="1">
             <tr>
               <th>TÍTULO</th>
+              <th>EDITAR</th>
               <th>ALUNO</th>
-              <th>VISIBILIDADE</th>
+              <th>VISÍVEL</th>
             </tr>
             <?php
               while ($row = $relatorios->fetch(PDO::FETCH_ASSOC)) 
               {
                 $visualizado = $row['VISUALIZADO'] ? 'checked' : '';
-                $visibilidade = $row['VISUALIZADO'] ? 'Público' : 'Privado';
                 $id = $row['iD'];
                 echo "<tr>";
-                echo "<td style='text-align:center'>";
+                echo "<td>";
                 echo "<span id='titulo_display_" . $row['iD'] . "'>" . $row['TITULO'] . "</span>";
                 echo "<input type='text' name='titulo[" . $row['iD'] . "]' id='titulo_edit_" . $row['iD'] . "' value='" . $row['TITULO'] . "' style='display:none;'>";
-                echo "<button type='button' style='margin-left: 10px' id='edit_button_$id' onclick='enableEdit($id)'>Editar Título</button>";
+                echo "</td>";
+                echo "<td>";
+                echo "<button type='button' id='edit_button_$id' onclick='enableEdit($id)'>Editar Título</button>";
                 echo "<button type='button' id='cancel_button_$id' onclick='cancelEdit($id)' style='display:none;'>Cancelar</button>";
                 echo "<input type='hidden' name='id_relatorio[$id]' value='$id'>";
                 echo "</td>";
-                echo "<td style='text-align:center'>". $row['ALUNO'] . "</td>";
+                echo "<td>". $row['ALUNO'] . "</td>";
                 echo "<td style='text-align:center'>";
-                echo "<input type='checkbox' name='visualizado[" . $row['iD'] . "]' id='visualizado_" . $row['iD'] . "]' $visualizado> ($visibilidade)";
+                echo "<input type='checkbox' name='visualizado[" . $row['iD'] . "]' id='visualizado_" . $row['iD'] . "]' $visualizado>";
                 echo "</td>";
                 echo "</tr>";
               }

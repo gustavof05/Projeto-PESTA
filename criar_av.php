@@ -251,9 +251,9 @@
           ?>
           Época de submissão: <select id='FiltroEpocas' name='epoca' size='' required>
             <option value='' selected disabled>Ver todas as épocas disponíveis</option>
-            <option value='Época Normal'>Época Normal</option>
-            <option value='Época de Recurso'>Época de Recurso</option>
-            <option value='Época Especial'>Época Especial</option>
+            <option value='Normal'>Época Normal</option>
+            <option value='Recurso'>Época de Recurso</option>
+            <option value='Especial'>Época Especial</option>
           </select>
           <br>
           Data de início: <input type="date" id="ini" name="inicio" required>

@@ -35,9 +35,9 @@
           else
           {
             //Mover o arquivo enviado para o diretório relatorios/ano/uc/file_name
-            $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . $_POST['EPOCA'] . "/" . $aluno;
+            $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . strtolower($_POST['EPOCA']) . "/" . $aluno;
             $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
-            // Verificar e criar o diretório, se necessário
+            //Verificar e criar o diretório, se necessário
             if(!file_exists($target_dir))
             {
               if(!mkdir($target_dir, 0777, true))

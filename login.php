@@ -51,7 +51,7 @@
             {
               $_SESSION['user'] = $_POST['user'];
               $_SESSION['user_aka'] = strtoupper(strstr($_POST['user'], "@", true));
-              if($_SESSION['user_aka'] == "LBF" || $_SESSION['user_aka'] == "JES" || $_SESSION['user_aka'] == "JBM")  //ADMIN
+              if($_SESSION['user_aka'] == "LBF" || $_SESSION['user_aka'] == "JES")  //ADMIN
               {
                 $_SESSION['user'] = "admin";
                 $docente = "ADMIN";
