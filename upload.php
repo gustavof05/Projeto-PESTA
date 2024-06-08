@@ -37,17 +37,46 @@
             //Mover o arquivo enviado para o diretório relatorios/ano/uc/file_name
             $target_dir = "uploads/" . $_GET['ano'] . "/" . $_GET['uc'] . "/" . strtolower($_POST['EPOCA']) . "/" . $aluno;
             $target_file = $target_dir . "/" . basename($_FILES["file"]["name"]);
-            //Verificar e criar o diretório, se necessário
-            if(!file_exists($target_dir))
+            if(file_exists($target_dir))  //Excluir a pasta e o trabalho do aluno, se existir
+            {
+              //Verificar se já existe um trabalho submetido por/para um aluno para a mesma edição de UC
+              $query_check_submission = $conexao->prepare("SELECT * FROM RELATORIOS_SUBMETIDOS WHERE EDICAO_AVALIACOES = :edav AND ALUNO = :aluno");
+              $query_check_submission->bindValue(':edav', $_POST['EDAV']);
+              $query_check_submission->bindValue(':aluno', $aluno);
+              $query_check_submission->execute();
+              $existing_submission = $query_check_submission->fetch(PDO::FETCH_ASSOC);
+              if($existing_submission)  //Se existir um trabalho anterior, o mesmo é eliminado
+              {
+                $query_delete_submission = $conexao->prepare("DELETE FROM RELATORIOS_SUBMETIDOS WHERE EDICAO_AVALIACOES = :edav AND ALUNO = :aluno");
+                $query_delete_submission->bindValue(':edav', $_POST['EDAV']);
+                $query_delete_submission->bindValue(':aluno', $aluno);
+                $query_delete_submission->execute();
+              }
+              //Limpar o conteúdo da pasta antes de excluí-la
+              $files = glob($target_dir . '/*');
+              foreach($files as $file)
+              {
+                if(is_file($file)) unlink($file);
+                else if(is_dir($file)) rmdir($file);
+              }  
+              //Agora a pasta deve estar vazia, então podemos excluí-la
+              if (!rmdir($target_dir)) 
+              {
+                  echo "Falha ao excluir a pasta anterior do aluno";
+                  return;
+              }
+            }
+            if(!file_exists($target_dir)) //Verificar e criar o diretório, se necessário
             {
               if(!mkdir($target_dir, 0777, true))
               {
-                echo "Falha ao criar diretórios...";
+                echo "Falha ao criar o diretório";
                 return;
               }
             }
             if(move_uploaded_file($_FILES["file"]["tmp_name"], $target_file))
             {
+              echo "Título: " . $_POST['titulo'] . "<br><br><br>"; 
               echo "Upload realizado com sucesso";
               $queryup = $conexao->prepare("INSERT INTO RELATORIOS_SUBMETIDOS (EDICAO_AVALIACOES, TITULO, ALUNO) VALUES (:edav, :tit, :aluno)");
               $queryup->bindValue(':edav', $_POST['EDAV']);
@@ -110,11 +139,7 @@
         <br><br>
         <span style='display:block; text-align:center;'><h3><b>
         <?php
-          if(count($resultado->fetchAll(PDO::FETCH_ASSOC)) > 0) 
-          {
-            echo "Título: " . $_POST['titulo'] . "<br><br><br>"; 
-            fazerUpload();
-          }
+          if(count($resultado->fetchAll(PDO::FETCH_ASSOC)) > 0) fazerUpload();
           else echo "Não é permitido submeter nesta edição de UC";
         ?>
         </b></span>

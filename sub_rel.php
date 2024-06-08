@@ -44,6 +44,25 @@
         margin: 0 auto;
         text-align: center;
       }
+      .navigation 
+      {
+        background-color: #006DA7;
+        overflow: hidden;
+      }
+      .navigation a
+      {
+        float: left;
+        display: block;
+        color: white;
+        text-align: center;
+        padding: 7px 16px;
+        text-decoration: none;
+      }
+      .navigation a:hover
+      {
+        background-color: #0C5595;
+        color: black;
+      }
       body 
       {
         text-align: center;
@@ -77,6 +96,16 @@
         {
           document.getElementById('formAnoLetivo').submit();  //Enviar o formulário ao alterar o ano letivo
         }
+        function validarFormulario()
+        {
+          var numeroAluno = document.getElementById("numero_aluno").value;
+          if(numeroAluno.length !== 7 || isNaN(numeroAluno))
+          {
+              alert("O número do aluno deve ter 7 dígitos numéricos.");
+              return false; //Impede o envio do formulário
+          }
+          return true;  //Permite o envio do formulário
+        }
     </script>
   </head>
   <body>
@@ -105,23 +134,15 @@
             ?>
           </select>
         </form>
-        </b></h2><br>
-        <form action="criar_uc.php" method="POST">
-          <input type="submit" name="cuc" value="Criar/Excluir edição UC"/>
-        </form>
-        <form action="criar_av.php" style="display: inline;" method="POST">
-          <input type="submit" name="ca" value="Definições de épocas de submissão"/>
-        </form>
-        <br><br>
-        <!--form action="insc_alunos.php" style="display: inline;" method="POST">
-          <input type="submit" name="ia" value="Inscrever alunos (não implementado)"/>
-        </form>
-        <br><br-->
-        <form action="visibilidade_rel.php" style="display: inline;" method="POST">
-          <input type="submit" name="vr" value="Seleção de relatórios em exposição"/>
-        </form>
+        </b></h2>
+        <nav class="navigation">
+            <a href="criar_uc.php">Criar/Excluir edição UC</a>
+            <a href="criar_av.php">Definições de épocas de submissão</a>
+            <a href="visibilidade_rel.php">Seleção de relatórios em exposição</a>
+            <!--a href="insc_alunos.php">Inscrever alunos (não implementado)</a-->
+        </nav>
         <!--Selecionar UC-->
-        <br><br><b><h3>Listar Unidades Curriculares:</b>
+        <b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
@@ -149,14 +170,15 @@
                   $hoje = strtotime($datual); //Converte a data atual para timestamp
                   $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
-                  echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                  echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST' onsubmit='return validarFormulario()'>
                     <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
                     <input type='hidden' name='EDAV' value='" . $row['ID'] . "'/>
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
                     <br>
-                    <b><u>Número do aluno:</u></b> <input type='text' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
+                    <b><u>Número do aluno:</u></b> <input type='text' id='numero_aluno' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
                     <br>
                     <input type='file' name='file'/>
+                    <br><br>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -185,20 +207,14 @@
             ?>
           </select>
         </form>
-        </b></h2><br>
-        <form action="criar_av.php" style="display: inline;" method="POST">
-          <input type="submit" name="ca" value="Definições de épocas de submissão"/>
-        </form>
-        <br><br>
-        <!--form action="insc_alunos.php" style="display: inline;" method="POST">
-          <input type="submit" name="ia" value="Inscrever alunos (não implementado)"/>
-        </form>
-        <br><br-->
-        <form action="visibilidade_rel.php" style="display: inline;" method="POST">
-          <input type="submit" name="vr" value="Seleção de relatórios em exposição"/>
-        </form>
+        </b></h2>
+        <nav class="navigation">
+            <a href="criar_av.php">Definições de épocas de submissão</a>
+            <a href="visibilidade_rel.php">Seleção de relatórios em exposição</a>
+            <!--a href="insc_alunos.php">Inscrever alunos (não implementado)</a-->
+        </nav>
         <!--Selecionar UC-->
-        <br><br><b><h3>Listar Unidades Curriculares:</b>
+        <b><h3>Listar Unidades Curriculares:</b>
         <select id='FiltroDisciplinas' name='FiltroDisciplinas' size='' style='width:100%;' onchange='mostrar()'>
           <option value='0' selected>Ver todas as Unidades Curriculares</option>
           <?php
@@ -226,14 +242,15 @@
                   $hoje = strtotime($datual); //Converte a data atual para timestamp
                   $cor = ($hoje >= $dinicial && $hoje <= $dfinal) ? "green" : "red"; //Verifica se o prazo está ultrapassado
                   echo "<b>Época:</b> <span style='color:blue;'>". $row["EPOCA"]. "</span> - <b>Prazo: <span style='color: $cor; text-decoration: underline;'>" . $row["FIM"] . "</span></b><br>";
-                  echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST'>
+                  echo "<form action='upload.php?uc=" . $row['SIGLA'] . "&ano=" . $row['ANO'] . "' enctype='multipart/form-data' method='POST' onsubmit='return validarFormulario()'>
                     <input type='hidden' name='EPOCA' value='" . $row['EPOCA'] . "'/>
                     <input type='hidden' name='EDAV' value='" . $row['ID'] . "'/>
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
                     <br>
-                    <b><u>Número do aluno:</u></b> <input type='text' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
+                    <b><u>Número do aluno:</u></b> <input type='text' id='numero_aluno' name='aluno' value='' autocomplete='off' placeholder='Exemplo: 1230001' required/>
                     <br>
                     <input type='file' name='file'/>
+                    <br><br>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";
@@ -283,6 +300,7 @@
                     <b><u>Título do trabalho:</u></b> <input type='text' name='titulo' value='' autocomplete='off' placeholder='Exemplo: Trabalho 1' required/>
                     <br>
                     <input type='file' name='file'/>
+                    <br><br>
                     <input type='submit' name='enviar' value='Submeter'/>
                   </form>";
                   echo "<br>";

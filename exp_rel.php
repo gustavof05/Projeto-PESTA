@@ -17,8 +17,8 @@
 		$tituloFormatado = str_replace(' ', '', $relatorio['TITULO']);
 		$aluno = $relatorio['ALUNO'];
 		$anoLetivo = $relatorio['ANO'];
-		$sigla = $relatorio['SIGLA'];
-		$epoca = rawurlencode($relatorio['EPOCA']);
+		$sigla = strtolower($relatorio['SIGLA']);
+		$epoca = strtolower($relatorio['EPOCA']);
 		return "uploads/$anoLetivo/$sigla/$epoca/$aluno";
 	}
 	// Organizar relatórios por categorias (UC)
@@ -50,6 +50,7 @@
 							echo "<img src='https://moodle.isep.ipp.pt/theme/image.php/isep/core/1702989422/f/pdf-24' width='18' height='18' style='vertical-align:middle'>";
 							echo $relatorio['TITULO'];
 						echo "</a>";
+						echo "&nbsp&nbsp&nbsp<b><u>Realizado em: " . $relatorio['ANO'] . "</b></u>";
 					echo "</li>";
 					echo "<p>";
 					next($relatoriosuc);

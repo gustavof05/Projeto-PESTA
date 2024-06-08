@@ -35,7 +35,7 @@
         <div style="text-align:center"><h1>Ocorreu algum erro com os dados de login ou não tem permissões para entrar nesta páginas</h1></div>
         <br><br><br>
         <form action="login.php" method="POST">
-          <div style="text-align:center"><input type="submit" name="login" value="Voltar atrás"/></div>
+          <div style="text-align:center"><input type="submit" name="login" value="Fazer login"/></div>
         </form>
       </div>
     </div>
