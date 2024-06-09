@@ -17,8 +17,8 @@
 		$tituloFormatado = str_replace(' ', '', $relatorio['TITULO']);
 		$aluno = $relatorio['ALUNO'];
 		$anoLetivo = $relatorio['ANO'];
-		$sigla = $relatorio['SIGLA'];
-		$epoca = rawurlencode($relatorio['EPOCA']);
+		$sigla = strtolower($relatorio['SIGLA']);
+		$epoca = strtolower($relatorio['EPOCA']);
 		return "uploads/$anoLetivo/$sigla/$epoca/$aluno";
 	}
 	// Organizar relatórios por categorias (UC)
@@ -34,15 +34,9 @@
   ]*/
 	//echo json_encode($exemplo);
 	//exit();
-			$lista=array();
-			reset($ucs);  // Reset the internal pointer of the array to the first element
-			while($uc = current($ucs))
-			{
-				
-				$relatoriosuc = current($ucs);
-				$lista[]=["UC"=>key($ucs),"relatorios"=>$relatoriosuc];
-				next($ucs);
-			} 
-			echo json_encode($lista);
+	$lista=array();
+	reset($ucs);  // Reset the internal pointer of the array to the first element
+	foreach($ucs as $uc => $relatoriosuc) $lista[] = array("UC" => $uc, "relatorios" => $relatoriosuc);
+	echo json_encode($lista);
 	$conexao = null;	//Fechar conexão com a base de dados
 ?>

@@ -23,7 +23,7 @@
 	}
 	// Organizar relatórios por categorias (UC)
 	$ucs = array();
-	while($row = $relatorios->fetch(PDO::FETCH_ASSOC)) $ucs[$row['SIGLA']][] = $row;
+	while($row = $relatorios->fetch(PDO::FETCH_ASSOC)) $ucs[$row['SIGLA']][] = $row;	//$ucs = array(SIGLA=>dadosrelatorio1,dadosrelatorio2,...; ...)
 ?>
 <html lang="pt">
 	<head>
@@ -37,28 +37,24 @@
 		<br>
 		<?php
 			reset($ucs);  // Reset the internal pointer of the array to the first element
-			while($uc = current($ucs))
+			foreach($ucs as $uc => $relatoriosuc)	//$relatoriosuc com dados dos relatórios
 			{
-				echo "<div><h2>" . key($ucs) . "</h2></div>";
+				echo "<div><h2>$uc</h2></div>";	//SIGLA da UC
 				echo "<ul>";
-				$relatoriosuc = current($ucs);
-				reset($relatoriosuc);
-				while($relatorio = current($relatoriosuc))
+				foreach($relatoriosuc as $relatorio)
 				{
 					echo "<li>";
-						echo "<a href=" . gerarCaminhoArquivo($relatorio) . " target='_blank'>";
-							echo "<img src='https://moodle.isep.ipp.pt/theme/image.php/isep/core/1702989422/f/pdf-24' width='18' height='18' style='vertical-align:middle'>";
-							echo $relatorio['TITULO'];
-						echo "</a>";
-						echo "&nbsp&nbsp&nbsp<b><u>Realizado em: " . $relatorio['ANO'] . "</b></u>";
+					echo "<a href=" . gerarCaminhoArquivo($relatorio) . " target='_blank'>";
+					echo "<img src='https://moodle.isep.ipp.pt/theme/image.php/isep/core/1702989422/f/pdf-24' width='18' height='18' style='vertical-align:middle'>";
+					echo $relatorio['TITULO'];
+					echo "</a>";
+					echo "&nbsp&nbsp&nbsp<b><u>Realizado em: " . $relatorio['ANO'] . "</b></u>";
 					echo "</li>";
 					echo "<p>";
-					next($relatoriosuc);
 				}
 				echo "</ul>";
 				echo "<br>";
-				next($ucs);
-			} 
+			}
 		?>
 	</body>
 </html>
