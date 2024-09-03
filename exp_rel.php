@@ -17,8 +17,8 @@
 		$tituloFormatado = str_replace(' ', '', $relatorio['TITULO']);
 		$aluno = $relatorio['ALUNO'];
 		$anoLetivo = $relatorio['ANO'];
-		$sigla = strtolower($relatorio['SIGLA']);
-		$epoca = strtolower($relatorio['EPOCA']);
+		$sigla = $relatorio['SIGLA'];
+		$epoca = strtolower(rawurlencode($relatorio['EPOCA']));
 		return "uploads/$anoLetivo/$sigla/$epoca/$aluno";
 	}
 	// Organizar relatórios por categorias (UC)

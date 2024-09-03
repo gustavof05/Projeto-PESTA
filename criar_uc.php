@@ -172,7 +172,7 @@
         <br><br>
         <b><u>NOTA IMPORTANTE:</u></b>
         <ul><li>O 'ANO' corresponde ao Ano Letivo em que se inicia a Unidade Curricular. <b>Exemplo: <u>Ano Letivo:20XX/20YY</u> --> <u>ANO:20XX</u></b></li>
-        <li>Antes de eliminar uma Unidade Curricular, <u>elimine as avaliações associadas à mesma</u>.</li></ul>
+        <li>Antes de eliminar uma Unidade Curricular ou de editar o seu ano letivo, <u>elimine as avaliações associadas à mesma</u>.</li></ul>
         <?php  
     }
     else header('Location: error.php');

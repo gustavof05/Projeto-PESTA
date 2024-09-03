@@ -54,7 +54,6 @@
               if($_SESSION['user_aka'] == "LBF" || $_SESSION['user_aka'] == "JES")  //ADMIN
               {
                 $_SESSION['user'] = "admin";
-                $docente = "ADMIN";
                 header('Location: sub_rel.php');
               }
               else if((strpos($_SESSION['user'], "@") == true) && (strlen($_SESSION['user']) == 15))  //Se for DOCENTE
@@ -78,7 +77,7 @@
           }
         ?>
         <form action="" method="POST">
-            <input type="text" name="user" value="" placeholder="Email de estudante"/>
+            <input type="text" name="user" value="" placeholder="E-mail do utilizador"/>
             <input type="text" name="password" value="" autocomplete="off" placeholder="Palavra-passe"/>
             <input type="submit" name="login" value="Login"/>
         </form>

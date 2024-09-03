@@ -266,7 +266,7 @@
         </form>
         <br><br><br>
         <b><u>NOTA IMPORTANTE:</u></b>
-        <ul><li>No âmbito da criação de uma submissão, <u>a Unidade Curricular deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC' ou pedir a um ADMINISTRADOR.</li>
+        <ul><li>No âmbito da criação de uma avaliação, <u>a Unidade Curricular deve ter uma edição disponível</u>. Se a edição ainda não tiver sido criada, é necessário criá-la na página anterior, no botão 'Criar/Excluir edição UC' ou pedir a um ADMINISTRADOR.</li>
         <?php  
   }
   else header("Location: error.php");

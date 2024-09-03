@@ -129,7 +129,7 @@
               for($ano = $_SESSION['alat']; $ano >= $ano_minimo; $ano--)
               {
                 $selected = ($_SESSION['alsel'] == $ano) ? "selected" : "";
-                echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
+                echo "<option value='$ano' $selected>$ano/" . ($ano+1) . "</option>";
               }
             ?>
           </select>
@@ -202,7 +202,7 @@
               for($ano = $_SESSION['alat']; $ano >= $ano_minimo; $ano--) 
               {
                 $selected = ($_SESSION['alsel'] == $ano) ? "selected" : "";
-                echo "<option value='$ano' $selected>$ano/" . $ano+1 . "</option>";
+                echo "<option value='$ano' $selected>$ano/" . ($ano+1) . "</option>";
               }
             ?>
           </select>
